@@ -6,8 +6,8 @@ const Header = () => {
 
   return (
     <div className="w-full flex justify-between items-center py-4 z-10 bg-transparent">
-      {/* Left Section */}
-      <div className="left flex items-center">
+      {/* left */}
+      <div className="left flex items-center [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">
         <div className="logo font-oxanium text-2xl">QUIZAKI</div>
         <div className="nav hidden md:flex ml-10 space-x-6">
           <span>Home</span>
@@ -17,18 +17,18 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Right Section */}
-      <div className="hidden md:block right space-x-4">
+      {/* right */}
+      <div className="hidden md:block right space-x-6 [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">
         <Link to="/auth">Sign In</Link>
         <Link
           to="/auth"
-          className="bg-white text-[rgb(185,68,89)] font-semibold rounded-lg p-3"
+          className="bg-white text-[rgb(185,68,89)] [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] font-semibold rounded-lg p-3"
         >
           Get Started
         </Link>
       </div>
 
-      {/* Hamburger Icon */}
+      {/* hamburger */}
       <div
         className="md:hidden flex items-center cursor-pointer"
         onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -40,7 +40,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* list */}
       {isMenuOpen && (
         <div className="absolute top-24 left-0 w-full bg-gradient-to-b from-[rgb(187,67,89)] to-mag shadow-lg md:hidden flex flex-col items-start p-6 space-y-4">
           <Link to="/" className="text-lg">
@@ -62,7 +62,7 @@ const Header = () => {
             </Link>
             <Link
               to="/auth"
-              className="text-[rgb(185,68,89)] bg-white font-semibold rounded-lg px-4 py-2"
+              className="text-[rgb(185,68,89)] [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] bg-white font-semibold rounded-lg px-4 py-2"
             >
               Get Started
             </Link>

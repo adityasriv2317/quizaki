@@ -2,6 +2,7 @@ import React from "react";
 import Header from "./Header";
 import Landing from "./Landing";
 import About from "./About";
+import Carousel from "./Carousel";
 
 const Home = () => {
   return (
@@ -12,6 +13,7 @@ const Home = () => {
       </div>
 
       <About />
+      <Carousel />
 
 
       Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quod nemo dolorem error a ullam voluptatem reiciendis harum, consectetur, maiores incidunt repudiandae rerum quaerat rem distinctio quo modi ipsa ex accusamus!
