@@ -82,11 +82,11 @@ const Carousel = () => {
       </div>
 
       {/* dots */}
-      <div className="flex justify-center items-center mt-6 space-x-2">
+      <div className="flex justify-center items-center mt-6 space-x-2 transition-transform duration-500 ease-in-out">
         {images.map((_, index) => (
           <div
             key={index}
-            onClick={() => setActiveIndex(index)}
+            onClick={() => {setActiveIndex(index)}}
             className={`w-3 h-3 rounded-full cursor-pointer ${
               index === activeIndex ? "bg-mag scale-110 shadow-sm shadow-mag" : "bg-gray-200 shadow-sm"
             } transition-colors duration-300`}
