@@ -5,7 +5,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="w-full flex justify-between items-center py-4 z-10 bg-transparent">
+    <div className="w-full flex justify-between items-center py-2 md:py-4 z-10 bg-transparent">
       {/* left */}
       <div className="left flex items-center [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">
         <div className="logo font-oxanium text-2xl">QUIZAKI</div>
@@ -30,13 +30,13 @@ const Header = () => {
 
       {/* hamburger */}
       <div
-        className="md:hidden flex items-center cursor-pointer"
+        className={`md:hidden flex items-center cursor-pointer ${isMenuOpen?"bg-white":"bg-transparent"} p-2 rounded-lg`}
         onClick={() => setIsMenuOpen(!isMenuOpen)}
       >
         <div className="space-y-1">
-          <div className="h-1 w-6 bg-white"></div>
-          <div className="h-1 w-6 bg-white"></div>
-          <div className="h-1 w-6 bg-white"></div>
+          <div className={`h-1 w-6 ${isMenuOpen?"bg-mag":"bg-white"}`}></div>
+          <div className={`h-1 w-6 ${isMenuOpen?"bg-mag":"bg-white"}`}></div>
+          <div className={`h-1 w-6 ${isMenuOpen?"bg-mag":"bg-white"}`}></div>
         </div>
       </div>
 
