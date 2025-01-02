@@ -5,7 +5,7 @@ import About from "./About";
 
 const Home = () => {
   return (
-    <div className="bg-[url('/imgs/home.svg')] text-white md:bg-contain bg-no-repeat font-poppins w-full px-6 md:px-16 pt-8 text-lg">
+    <div className="bg-[url('/imgs/home.svg')] text-white bg-top md:bg-contain bg-no-repeat font-poppins w-full px-6 md:px-16 pt-8 text-lg">
       <div className="h-screen">
         <Header />
         <Landing />
