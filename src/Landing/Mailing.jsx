@@ -12,7 +12,7 @@ const Mailing = () => {
         <input
           type="email"
           placeholder="Your email address"
-          className="rounded-l-lg px-2 md:px-4 md:py-4 w-full md:max-w-[30vw]"
+          className="rounded-l-lg px-2 md:px-4 md:py-4 w-full text-gray-600 md:max-w-[30vw]"
         />
         <button className="bg-[rgb(242,159,5)] rounded-r-lg px-6 py-4 font-semibold">Subscribe</button>
       </div>
