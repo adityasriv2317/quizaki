@@ -5,6 +5,7 @@ import Landing from "./Landing";
 import About from "./About";
 import Carousel from "./Carousel";
 import Footer from "./Footer";
+import Mailing from "./Mailing";
 
 const Home = () => {
   return (
@@ -17,6 +18,7 @@ const Home = () => {
       <About />
       <Carousel />
 
+      <Mailing />
       <Footer />
 
     </div>
