@@ -3,7 +3,7 @@ import hero from '/imgs/hero.svg';
 
 const Landing = () => {
   return (
-    <div className="flex flex-col md:flex-row md:justify-between w-full md:mt-24 mt-6 h-screen">
+    <div className="flex flex-col md:flex-row text-white md:justify-between w-full md:mt-24 mt-6 h-screen">
       {/* Left  */}
       <div className="flex flex-col md:w-1/2 mt-4 items-start mb-8">
         <p className="font-semibold text-lg md:text-xl [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">PLAY AND IMPROVE</p>
