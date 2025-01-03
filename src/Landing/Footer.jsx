@@ -5,13 +5,14 @@ import {
   faLinkedin,
   faGithub,
 } from "@fortawesome/free-brands-svg-icons";
+import { faExternalLinkAlt } from "@fortawesome/free-solid-svg-icons";
 
 import playStore from "/graphics/play.svg";
 import appStore from "/graphics/ios.svg";
 
 const Footer = () => {
   return (
-    <div className="[text-shadow:3px_3px_12px_rgba(0,0,0,0.5)] py-8">
+    <div className="py-8">
       <div className="hidden md:flex flex-col md:flex-row justify-around items-center">
         <div className="justify-center">
           <div className="flex space-x-4">
@@ -54,14 +55,14 @@ const Footer = () => {
           </div>
 
         </div>
-        <div className="grid grid-cols-2 gap-1 text-center">
-          <a className="text-md hover:underline" href="#">
+        <div className="grid grid-cols-2 gap-1 text-gray-500 text-center">
+          <a className="text-md hover:text-black" href="#">
             Back to Top
           </a>
-          <a className="text-md hover:underline" href="#">
+          <a className="text-md hover:text-black" href="#">
             Events
           </a>
-          <a className="text-md hover:underline" href="#">
+          <a className="text-md hover:text-black" href="#">
             Instructions
           </a>
           <a
@@ -69,7 +70,7 @@ const Footer = () => {
             href="https://new-cccc.vercel.app/"
             target="_blank"
           >
-            CCC
+            CCC <FontAwesomeIcon icon={faExternalLinkAlt} className="text-xs text-center" />
           </a>
         </div>
       </div>
@@ -127,10 +128,12 @@ const Footer = () => {
             href="https://new-cccc.vercel.app/"
             target="_blank"
           >
-            CCC
+            CCC <FontAwesomeIcon icon={faExternalLinkAlt} className="text-xs" />
           </a>
         </div>
       </div>
+
+      <div className="bg-gray-500 my-4 w-full h-[1px]"></div>
 
       <div className="flex flex-col md:flex-row justify-between items-center mt-6 px-4">
         <p className="hidden md:block text-mag [text-shadow:3px_3px_12px_rgba(255,93,122,0.5)] text-3xl font-oxanium">
