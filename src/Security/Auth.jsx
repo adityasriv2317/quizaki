@@ -6,19 +6,22 @@ import Footer from "../Landing/Footer";
 
 import ReCAPTCHA from "react-google-recaptcha";
 import mesh from "/graphics/mesh.svg";
+import axios from "axios";
 
 const Auth = () => {
   const [playerName, setPlayerName] = useState("");
   const [email, setEmail] = useState("");
   const [captcha, setCaptcha] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
   const [isLogin, setIsLogin] = useState(false);
 
   function onChange(value) {
     console.log("Captcha value:", value);
+    setCaptchaToken(value);
     setCaptcha(!!value);
   }
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
 
     if (!captcha) {
@@ -30,7 +33,26 @@ const Auth = () => {
       return;
     }
 
-    console.log("Registration form submitted:", { playerName, email });
+    // let signupData = {
+    //   adminId: adminid,
+    //   password: adminpass,
+    // };
+
+    const regUrl = `https://ccc-quiz.onrender.com/player/registerPlayer?recaptchaToken=${captchaToken}`;
+
+    const regData = {
+      "PlayerName": playerName,
+      "email": email,
+    };
+
+    try {
+      console.log("posting");
+      const response = await axios.post(regUrl, regData);
+      console.log("Registration response:", response);
+      console.log("Registration form submitted:", { playerName, email });
+    } catch (error) {
+      console.error("Registration error:", error);
+    }
   };
 
   const handleLogin = (e) => {
@@ -56,7 +78,11 @@ const Auth = () => {
         </div>
 
         <div className="flex flex-col md:flex-row justify-center items-center w-full md:mt-10 space-y-6 md:space-y-0 md:space-x-24 font-oxanium">
-          <img src={mesh} className="absolute h-[88vh] w-screen bottom-0 z-0" alt="" />
+          <img
+            src={mesh}
+            className="absolute h-[88vh] w-screen bottom-0 z-0"
+            alt=""
+          />
 
           {/* Left Image */}
           <div className="left hidden md:block md:w-1/2 z-10 lg:w-1/3">
@@ -159,7 +185,10 @@ const Auth = () => {
                 <>
                   New user?{" "}
                   <span
-                    onClick={() => {setIsLogin(false) ; setCaptcha(false)}}
+                    onClick={() => {
+                      setIsLogin(false);
+                      setCaptcha(false);
+                    }}
                     className="hover:cursor-pointer text-yellow-300"
                   >
                     Register
@@ -169,7 +198,10 @@ const Auth = () => {
                 <>
                   Already registered?{" "}
                   <span
-                    onClick={() => {setIsLogin(true); setCaptcha(false) }}
+                    onClick={() => {
+                      setIsLogin(true);
+                      setCaptcha(false);
+                    }}
                     className="hover:cursor-pointer text-yellow-300"
                   >
                     Login
