@@ -11,9 +11,17 @@ import axios from "axios";
 const Auth = () => {
   const [playerName, setPlayerName] = useState("");
   const [email, setEmail] = useState("");
+
+  const [regLoader, setRegLoader] = useState(false);
+  const [loginLoader, setLoginLoader] = useState(false);
+  const [otpLoader, setOtpLoader] = useState(false);
+  const [mouseOnButton, setMouseOnButton] = useState(true);
+
   const [captcha, setCaptcha] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaToken, setCaptchaToken] = useState(null);
   const [isLogin, setIsLogin] = useState(false);
+
+  const [otpOverlay, setOtpOverlay] = useState(false);
 
   function onChange(value) {
     console.log("Captcha value:", value);
@@ -33,25 +41,24 @@ const Auth = () => {
       return;
     }
 
-    // let signupData = {
-    //   adminId: adminid,
-    //   password: adminpass,
-    // };
-
     const regUrl = `https://ccc-quiz.onrender.com/player/registerPlayer?recaptchaToken=${captchaToken}`;
 
     const regData = {
-      "PlayerName": playerName,
-      "email": email,
+      PlayerName: playerName,
+      email: email,
+      // "recaptchaToken": captchaToken,
     };
 
     try {
       console.log("posting");
+      setRegLoader(true);
       const response = await axios.post(regUrl, regData);
       console.log("Registration response:", response);
       console.log("Registration form submitted:", { playerName, email });
     } catch (error) {
       console.error("Registration error:", error);
+    } finally {
+      setRegLoader(false);
     }
   };
 
@@ -61,7 +68,13 @@ const Auth = () => {
       alert("Please enter your email.");
       return;
     }
-    console.log("Login form submitted:", { email });
+    try {
+      setLoginLoader(true);
+    } finally {
+      console.log("Login form submitted:", { email });
+      setLoginLoader(false);
+      setOtpOverlay(true);
+    }
   };
 
   return (
@@ -133,8 +146,18 @@ const Auth = () => {
                   } shadow-mag font-semibold py-2 rounded-md w-3/5 mx-auto border border-white ${
                     captcha ? "bg-[rgb(242,75,105)]" : "bg-[rgb(199,64,89)]"
                   } text-white transition`}
+                  onMouseEnter={() => setMouseOnButton(true)}
+                  onMouseLeave={() => setMouseOnButton(false)}
                 >
-                  Login
+                  {loginLoader ? (
+                    <div
+                      className={`loader ${
+                        mouseOnButton ? "border-mag" : "border-white"
+                      } mx-auto border-t-transparent border-4 w-6 h-6 rounded-full animate-spin`}
+                    />
+                  ) : (
+                    "Login"
+                  )}
                 </button>
               </form>
             ) : (
@@ -174,8 +197,18 @@ const Auth = () => {
                   } shadow-mag font-semibold py-2 rounded-md w-3/5 mx-auto border border-white ${
                     captcha ? "bg-[rgb(242,75,105)]" : "bg-[rgb(199,64,89)]"
                   } text-white transition`}
+                  onMouseEnter={() => setMouseOnButton(true)}
+                  onMouseLeave={() => setMouseOnButton(false)}
                 >
-                  Register
+                  {regLoader ? (
+                    <div
+                      className={`loader ${
+                        mouseOnButton ? "border-mag" : "border-white"
+                      } mx-auto border-t-transparent border-4 w-6 h-6 rounded-full animate-spin`}
+                    />
+                  ) : (
+                    "Register"
+                  )}
                 </button>
               </form>
             )}
@@ -209,6 +242,55 @@ const Auth = () => {
                 </>
               )}
             </div>
+          </div>
+        </div>
+
+        <div
+          className={`${
+            otpOverlay ? "flex absolute" : "hidden"
+          } font-oxanium z-20 absolute top-0 left-0 w-full h-full bg-black bg-opacity-45`}
+        >
+          <div className="mx-auto h-1/2 py-6 px-6 shadow-lg bg-gradient-to-b from-[rgb(183,67,88)] to-[rgb(129,41,57)] border rounded-lg w-full md:w-2/5 lg:w-1/3 border-white justify-center items-center mt-8 text-sm md:text-base ">
+            <p className="text-2xl md:text-3xl font-semibold text-center">
+              OTP Verification
+            </p>
+            <p className="text-sm md:text-lg text-center mt-2">
+              [ Enter the OTP sent to your email ]
+            </p>
+
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="flex flex-col space-y-4 px-2 md:px-8 py-14"
+            >
+              <input
+                type="text"
+                name="otp"
+                id="otp"
+                className="rounded-md px-4 py-2 w-full text-gray-700 text-sm md:text-base"
+                placeholder="Enter the OTP"
+              />
+
+              <p className="text-center cursor-pointer text-sm md:text-base">
+                Didn't receive the OTP?{" "}
+                <span className="text-yellow-300">Resend OTP</span>
+              </p>
+
+              <button
+                className={`shadow-sm hover:bg-white hover:text-[rgb(183,67,88)] hover:border-mag hover:shadow-white shadow-mag font-semibold py-2 rounded-md w-3/5 mx-auto border border-white bg-[rgb(242,75,105)] text-white transition`}
+                onMouseEnter={() => setMouseOnButton(true)}
+                onMouseLeave={() => setMouseOnButton(false)}
+              >
+                {otpLoader ? (
+                  <div
+                    className={`loader ${
+                      mouseOnButton ? "border-mag" : "border-white"
+                    } mx-auto border-t-transparent border-4 w-6 h-6 rounded-full animate-spin`}
+                  />
+                ) : (
+                  "Verify"
+                )}
+              </button>
+            </form>
           </div>
         </div>
       </div>
