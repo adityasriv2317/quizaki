@@ -6,7 +6,7 @@ import c from "/icons/c.svg";
 
 const About = () => {
   return (
-    <div>
+    <div id="features">
       {/* heading */}
       <p className="text-center text-mag text-xl font-semibold mt-[65vw] md:mt-[25vh] [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)]">
         UNLOCK YOUR COGNITIVE POTENTIAL

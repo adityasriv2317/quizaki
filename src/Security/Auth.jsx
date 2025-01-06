@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import authImg from "/graphics/auth.svg";
 import Mailing from "../Landing/Mailing";
 import Footer from "../Landing/Footer";
@@ -9,6 +9,8 @@ import mesh from "/graphics/mesh.svg";
 import axios from "axios";
 
 const Auth = () => {
+  const { authType } = useParams();
+
   const [playerName, setPlayerName] = useState("");
   const [email, setEmail] = useState("");
 
@@ -19,7 +21,7 @@ const Auth = () => {
 
   const [captcha, setCaptcha] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLogin, setIsLogin] = useState(authType === "login");
 
   const [otpOverlay, setOtpOverlay] = useState(false);
 
@@ -44,9 +46,8 @@ const Auth = () => {
     const regUrl = `https://ccc-quiz.onrender.com/player/registerPlayer?recaptchaToken=${captchaToken}`;
 
     const regData = {
-      PlayerName: playerName,
+      playerName: playerName,
       email: email,
-      // "recaptchaToken": captchaToken,
     };
 
     try {
