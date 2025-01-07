@@ -8,7 +8,7 @@ const About = () => {
   return (
     <div id="features">
       {/* heading */}
-      <p className="text-center text-mag text-xl font-semibold mt-[65vw] md:mt-[25vh] [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)]">
+      <p className="text-center text-mag text-xl font-semibold mt-[25vw] md:mt-[25vh] [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)]">
         UNLOCK YOUR COGNITIVE POTENTIAL
       </p>
       <p className="text-center text-black text-4xl mt-2 font-semibold [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)]">

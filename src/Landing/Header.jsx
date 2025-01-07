@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 
 import { useWebData } from "../Security/WebData";
@@ -9,6 +9,38 @@ const Header = () => {
   const [menuSlide, setMenuSlide] = useState(false);
   const [profileMenuDesktop, setProfileMenuDesktop] = useState(false);
   const { siteData } = useWebData();
+  const menuRef = useRef(null); // Ref for menu container
+
+  const menuClick = () => {
+    if (isMenuOpen) {
+      setMenuSlide(false);
+      setTimeout(() => setIsMenuOpen(false), 200);
+      setProfileMenuMobile(false);
+    } else {
+      setMenuSlide(true);
+      setIsMenuOpen(true);
+      setProfileMenuMobile(false);
+    }
+  };
+
+  const closeMenu = () => {
+    setMenuSlide(false);
+    setTimeout(() => setIsMenuOpen(false), 200);
+    setProfileMenuMobile(false);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        closeMenu(); // Close menu if clicked outside
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className="w-full flex justify-between text-white items-center py-2 md:py-4 z-10 bg-transparent">
@@ -16,12 +48,18 @@ const Header = () => {
       <div className="left flex items-center [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">
         <div className="logo font-oxanium text-2xl">QUIZAKI</div>
         <div className="nav hidden md:flex ml-10 space-x-6">
-          <span className="cursor-pointer">Home</span>
-          <a href="#features" className="cursor-pointer">
+          <a href="#" className="cursor-pointer" onClick={closeMenu}>
+            Home
+          </a>
+          <a href="#features" className="cursor-pointer" onClick={closeMenu}>
             Features
           </a>
-          <span className="cursor-pointer">Testimonials</span>
-          <span className="cursor-pointer">News</span>
+          <a href="#testimonials" className="cursor-pointer" onClick={closeMenu}>
+            Testimonials
+          </a>
+          <a href="#news" className="cursor-pointer" onClick={closeMenu}>
+            News
+          </a>
         </div>
       </div>
 
@@ -36,7 +74,10 @@ const Header = () => {
           </div>
           {profileMenuDesktop && (
             <div className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg">
-              <Link to="/profile" className="block px-4 py-2 hover:bg-gray-100 rounded-t-lg">
+              <Link
+                to="/profile"
+                className="block px-4 py-2 hover:bg-gray-100 rounded-t-lg"
+              >
                 Profile
               </Link>
               <Link
@@ -45,7 +86,10 @@ const Header = () => {
               >
                 Settings
               </Link>
-              <Link to="/logout" className="block px-4 py-2 hover:bg-gray-100 rounded-b-lg">
+              <Link
+                to="/logout"
+                className="block px-4 py-2 hover:bg-gray-100 rounded-b-lg"
+              >
                 Logout
               </Link>
             </div>
@@ -68,17 +112,7 @@ const Header = () => {
         className={`md:hidden flex items-center cursor-pointer ${
           isMenuOpen ? "bg-white" : "bg-transparent"
         } p-2 rounded-lg transition-all ease-in-out`}
-        onClick={() => {
-          if (isMenuOpen) {
-            setMenuSlide(false);
-            setTimeout(() => setIsMenuOpen(false), 200);
-            setProfileMenuMobile(false);
-          } else {
-            setMenuSlide(true);
-            setIsMenuOpen(true);
-            setProfileMenuMobile(false);
-          }
-        }}
+        onClick={menuClick}
       >
         <div className="space-y-1">
           <div
@@ -96,22 +130,23 @@ const Header = () => {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div
+          ref={menuRef}
           className={`absolute top-24 left-0 w-full ${
             menuSlide ? "animate-slideIn" : "animate-slideOut"
           } bg-gradient-to-b overflow-hidden from-[rgb(187,67,89)] to-mag shadow-lg shadow-[rgba(0,0,0,0.5)] md:hidden flex flex-col items-start p-6 space-y-4`}
         >
-          <Link to="/" className="text-lg">
+          <a href="#" className="text-lg" onClick={closeMenu}>
             Home
-          </Link>
-          <Link to="/features" className="text-lg">
+          </a>
+          <a href="#features" className="text-lg" onClick={closeMenu}>
             Features
-          </Link>
-          <Link to="/testimonials" className="text-lg">
+          </a>
+          <a href="#testimonials" className="text-lg" onClick={closeMenu}>
             Testimonials
-          </Link>
-          <Link to="/news" className="text-lg">
+          </a>
+          <a href="#news" className="text-lg" onClick={closeMenu}>
             News
-          </Link>
+          </a>
           <div className="bg-white w-full h-[1px]"></div>
 
           {siteData.isLogin ? (
@@ -127,18 +162,21 @@ const Header = () => {
                   <Link
                     to="/profile"
                     className="block px-4 py-2 hover:bg-gray-100 rounded-t-lg"
+                    onClick={closeMenu}
                   >
                     Profile
                   </Link>
                   <Link
                     to="/settings"
                     className="block px-4 py-2 hover:bg-gray-100"
+                    onClick={closeMenu}
                   >
                     Settings
                   </Link>
                   <Link
                     to="/logout"
                     className="block px-4 py-2 hover:bg-gray-100 rounded-b-lg"
+                    onClick={closeMenu}
                   >
                     Logout
                   </Link>
@@ -147,12 +185,13 @@ const Header = () => {
             </>
           ) : (
             <div className="space-x-6">
-              <Link to="/auth/login" className="text-lg">
+              <Link to="/auth/login" className="text-lg" onClick={closeMenu}>
                 Sign In
               </Link>
               <Link
                 to="/auth/register"
                 className="text-[rgb(185,68,89)] [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] bg-white font-semibold rounded-lg px-4 py-2"
+                onClick={closeMenu}
               >
                 Get Started
               </Link>
