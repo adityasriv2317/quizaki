@@ -85,7 +85,7 @@ const Auth = () => {
           <span className="font-oxanium text-2xl md:text-2xl">QUIZAKI</span>
           <Link
             to="/"
-            className="font-poppins font-semibold text-sm md:text-base"
+            className="font-poppins font-semibold text-sm md:text-base z-50 bg-white text-mag p-2 rounded-lg shadow-md [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)]"
           >
             Home
           </Link>
