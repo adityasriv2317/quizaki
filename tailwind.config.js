@@ -27,6 +27,9 @@ export default {
         slideIn: 'slideIn 0.2s ease',
         slideOut: 'slideOut 0.2s ease',
       },
+      screens: {
+        md: '900px',
+      },
     },
   },
   plugins: [],

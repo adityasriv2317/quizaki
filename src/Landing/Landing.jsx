@@ -18,10 +18,10 @@ const Landing = () => {
 
         {/* cta */}
         <div className="flex flex-wrap space-x-3 mt-6">
-          <button className="bg-mag border border-mag [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-4 py-2 rounded-md shadow-xl">
+          <button className="bg-mag hover:bg-[rgb(209,71,94)] border border-red-800 [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-4 py-2 rounded-md shadow-xl">
             Play Now
           </button>
-          <button className="bg-white text-mag px-4 [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] py-2 rounded-md shadow-xl border border-mag">
+          <button className="bg-[rgb(245,245,245)] hover:bg-white text-mag px-4 [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] py-2 rounded-md shadow-xl border border-mag">
             Learn More
           </button>
         </div>

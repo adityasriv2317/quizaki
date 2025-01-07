@@ -85,13 +85,13 @@ const Auth = () => {
           <span className="font-oxanium text-2xl md:text-2xl">QUIZAKI</span>
           <Link
             to="/"
-            className="font-poppins font-semibold text-sm md:text-base z-50 bg-white text-mag p-2 rounded-lg shadow-md [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)]"
+            className="font-poppins font-semibold text-sm md:text-base z-50 md:bg-[rgb(245,245,245)] bg-white hover:bg-white text-mag p-2 rounded-lg shadow-md [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)]"
           >
             Home
           </Link>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-center items-center w-full md:mt-10 space-y-6 md:space-y-0 md:space-x-24 font-oxanium">
+        <div className="flex flex-col md:flex-row justify-center items-center w-full mt-6 md:mt-10 space-y-6 md:space-y-0 md:space-x-24 font-oxanium">
           <img
             src={mesh}
             className="absolute h-[88vh] w-screen bottom-0 z-0"
@@ -108,7 +108,7 @@ const Auth = () => {
           </div>
 
           {/* Right Form */}
-          <div className="right z-10 py-6 px-6 shadow-lg bg-gradient-to-b from-[rgb(183,67,88)] to-[rgb(129,41,57)] border rounded-lg w-full md:w-2/5 lg:w-1/3 h-auto border-white">
+          <div className="right z-10 py-6 px-6 shadow-lg bg-gradient-to-b from-[rgb(183,67,88)] to-[rgb(129,41,57)] border rounded-lg w-full md:w-1/2 lg:w-1/3 h-auto border-white">
             <p className="text-2xl md:text-3xl font-semibold text-center">
               {isLogin ? "LOGIN" : "REGISTER"}
             </p>
