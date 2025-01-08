@@ -6,6 +6,7 @@ import About from "./About";
 import Carousel from "./Carousel";
 import Footer from "./Footer";
 import Mailing from "./Mailing";
+import Events from "./Events";
 
 const Home = () => {
   return (
@@ -17,6 +18,7 @@ const Home = () => {
 
       <About />
       <Carousel />
+      <Events />
 
       <Mailing />
       <Footer />

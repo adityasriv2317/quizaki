@@ -8,14 +8,19 @@ import ReCAPTCHA from "react-google-recaptcha";
 import mesh from "/graphics/mesh.svg";
 import axios from "axios";
 
-const ErrorPrompt = ({ message, clearError }) => {
+const MessagePrompt = ({ type, message, clearMessage }) => {
   if (!message) return null;
+
+  const bgColor = type === "success" ? "bg-green-500" : "bg-red-500";
+
   return (
-    <div className="fixed text-center flex flex-col items-center justify-center top-10 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded-md shadow-lg z-50">
+    <div
+      className={`fixed text-center top-10 left-1/2 flex flex-col items-center justify-center transform -translate-x-1/2 ${bgColor} text-white px-6 py-2 rounded-md shadow-lg z-50`}
+    >
       <p>{message}</p>
       <button
-        className="text-sm underline text-center hover:text-gray-200"
-        onClick={clearError}
+        className="text-center text-sm underline hover:text-gray-200"
+        onClick={clearMessage}
       >
         Close
       </button>
@@ -41,7 +46,8 @@ const Auth = () => {
 
   const [otpOverlay, setOtpOverlay] = useState(false);
 
-  const [errorMessage, setErrorMessage] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
 
   function onChange(value) {
     console.log("Captcha value:", value);
@@ -53,11 +59,13 @@ const Auth = () => {
     e.preventDefault();
 
     if (!captcha) {
-      setErrorMessage("Please complete the reCAPTCHA!");
+      setMessageType("error");
+      setMessage("Please complete the reCAPTCHA!");
       return;
     }
     if (!playerName || !email) {
-      setErrorMessage("Please fill out all fields.");
+      setMessageType("error");
+      setMessage("Please fill out all fields.");
       return;
     }
 
@@ -76,7 +84,8 @@ const Auth = () => {
       console.log("Registration form submitted:", { playerName, email });
     } catch (error) {
       console.error("Registration error:", error);
-      setErrorMessage("Registration failed. Please try again.");
+      setMessageType("error");
+      setMessage("Registration failed. Please try again.");
     } finally {
       setRegLoader(false);
       setOtpOverlay(true);
@@ -86,7 +95,8 @@ const Auth = () => {
   const handleLogin = (e) => {
     e.preventDefault();
     if (!email) {
-      setErrorMessage("Please enter your email.");
+      setMessageType("error");
+      setMessage("Please enter your email.");
       return;
     }
 
@@ -94,7 +104,7 @@ const Auth = () => {
       setLoginLoader(true);
     } catch (error) {
       console.error("Error in login", error);
-      setErrorMessage("Login failed. Please try again.");
+      setMessage("Login failed. Please check your email and try again.");
     } finally {
       console.log("Login form submitted:", { email });
       setLoginLoader(false);
@@ -106,7 +116,8 @@ const Auth = () => {
     e.preventDefault();
 
     if (!userOtp) {
-      setErrorMessage("Please enter the OTP.");
+      setMessageType("error");
+      setMessage("Please enter the OTP.");
       return;
     }
 
@@ -122,7 +133,9 @@ const Auth = () => {
       console.log("OTP verified:", res);
     } catch (error) {
       console.log("Error in OTP verification", error);
-      setErrorMessage("OTP verification failed. Please try again.");
+      setMessageType("error");
+      setMessage("OTP verification failed. Please try again.");
+      console.error(error);
     } finally {
       setOtpLoader(false);
       setOtpOverlay(false);
@@ -131,10 +144,10 @@ const Auth = () => {
 
   return (
     <div className="">
-      {/* Error Prompt */}
-      <ErrorPrompt
-        message={errorMessage}
-        clearError={() => setErrorMessage("")}
+      <MessagePrompt
+        type={messageType}
+        message={message}
+        clearMessage={() => setMessage("")}
       />
       <div className="h-screen px-4 md:px-16 pt-8 text-white bg-gradient-to-b from-[rgb(183,67,88)] to-[rgb(242,75,105)] font-poppins">
         <div className="flex items-center justify-between py-4 px-4 md:px-8">
