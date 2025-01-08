@@ -8,11 +8,27 @@ import ReCAPTCHA from "react-google-recaptcha";
 import mesh from "/graphics/mesh.svg";
 import axios from "axios";
 
+const ErrorPrompt = ({ message, clearError }) => {
+  if (!message) return null;
+  return (
+    <div className="fixed text-center flex flex-col items-center justify-center top-10 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-2 rounded-md shadow-lg z-50">
+      <p>{message}</p>
+      <button
+        className="text-sm underline text-center hover:text-gray-200"
+        onClick={clearError}
+      >
+        Close
+      </button>
+    </div>
+  );
+};
+
 const Auth = () => {
   const { authType } = useParams();
 
   const [playerName, setPlayerName] = useState("");
   const [email, setEmail] = useState("");
+  const [userOtp, setUserOtp] = useState("");
 
   const [regLoader, setRegLoader] = useState(false);
   const [loginLoader, setLoginLoader] = useState(false);
@@ -25,6 +41,8 @@ const Auth = () => {
 
   const [otpOverlay, setOtpOverlay] = useState(false);
 
+  const [errorMessage, setErrorMessage] = useState("");
+
   function onChange(value) {
     console.log("Captcha value:", value);
     setCaptchaToken(value);
@@ -35,11 +53,11 @@ const Auth = () => {
     e.preventDefault();
 
     if (!captcha) {
-      alert("Please complete the reCAPTCHA!");
+      setErrorMessage("Please complete the reCAPTCHA!");
       return;
     }
     if (!playerName || !email) {
-      alert("Please fill out all fields.");
+      setErrorMessage("Please fill out all fields.");
       return;
     }
 
@@ -58,19 +76,25 @@ const Auth = () => {
       console.log("Registration form submitted:", { playerName, email });
     } catch (error) {
       console.error("Registration error:", error);
+      setErrorMessage("Registration failed. Please try again.");
     } finally {
       setRegLoader(false);
+      setOtpOverlay(true);
     }
   };
 
   const handleLogin = (e) => {
     e.preventDefault();
     if (!email) {
-      alert("Please enter your email.");
+      setErrorMessage("Please enter your email.");
       return;
     }
+
     try {
       setLoginLoader(true);
+    } catch (error) {
+      console.error("Error in login", error);
+      setErrorMessage("Login failed. Please try again.");
     } finally {
       console.log("Login form submitted:", { email });
       setLoginLoader(false);
@@ -78,8 +102,40 @@ const Auth = () => {
     }
   };
 
+  const verifyOtp = (e) => {
+    e.preventDefault();
+
+    if (!userOtp) {
+      setErrorMessage("Please enter the OTP.");
+      return;
+    }
+
+    const otpApi = "myhost.in/api.otpverify";
+
+    const otpData = {
+      otp: userOtp,
+    };
+
+    try {
+      setOtpLoader(true);
+      const res = axios.post(otpApi, otpData);
+      console.log("OTP verified:", res);
+    } catch (error) {
+      console.log("Error in OTP verification", error);
+      setErrorMessage("OTP verification failed. Please try again.");
+    } finally {
+      setOtpLoader(false);
+      setOtpOverlay(false);
+    }
+  };
+
   return (
     <div className="">
+      {/* Error Prompt */}
+      <ErrorPrompt
+        message={errorMessage}
+        clearError={() => setErrorMessage("")}
+      />
       <div className="h-screen px-4 md:px-16 pt-8 text-white bg-gradient-to-b from-[rgb(183,67,88)] to-[rgb(242,75,105)] font-poppins">
         <div className="flex items-center justify-between py-4 px-4 md:px-8">
           <span className="font-oxanium text-2xl md:text-2xl">QUIZAKI</span>
@@ -252,6 +308,12 @@ const Auth = () => {
           } font-oxanium z-20 absolute top-0 left-0 w-full h-full bg-black bg-opacity-45`}
         >
           <div className="mx-auto h-1/2 py-6 px-6 shadow-lg bg-gradient-to-b from-[rgb(183,67,88)] to-[rgb(129,41,57)] border rounded-lg w-full md:w-2/5 lg:w-1/3 border-white justify-center items-center mt-8 text-sm md:text-base ">
+            <button
+              onClick={() => setOtpOverlay(false)}
+              className="relative font-mono text-white text-lg"
+            >
+              X
+            </button>
             <p className="text-2xl md:text-3xl font-semibold text-center">
               OTP Verification
             </p>
@@ -260,7 +322,7 @@ const Auth = () => {
             </p>
 
             <form
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={verifyOtp}
               className="flex flex-col space-y-4 px-2 md:px-8 py-14"
             >
               <input
@@ -269,6 +331,7 @@ const Auth = () => {
                 id="otp"
                 className="rounded-md px-4 py-2 w-full text-gray-700 text-sm md:text-base"
                 placeholder="Enter the OTP"
+                onChange={(e) => setUserOtp(e.target.value)}
               />
 
               <p className="text-center cursor-pointer text-sm md:text-base">
