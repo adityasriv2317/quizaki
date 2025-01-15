@@ -25,7 +25,7 @@ export const WebData = ({ children }) => {
         }));
     };
 
-    return (
+    return (    
         <webContext.Provider value={{ siteData, userLogin, userLogout }}>
             {children}
         </webContext.Provider>

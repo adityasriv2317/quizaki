@@ -9,7 +9,7 @@ const Header = () => {
   const [menuSlide, setMenuSlide] = useState(false);
   const [profileMenuDesktop, setProfileMenuDesktop] = useState(false);
   const { siteData } = useWebData();
-  const menuRef = useRef(null); // Ref for menu container
+  const menuRef = useRef(null);
 
   const menuClick = () => {
     if (isMenuOpen) {
@@ -32,7 +32,7 @@ const Header = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
-        closeMenu(); // Close menu if clicked outside
+        closeMenu();
       }
     };
 

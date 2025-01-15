@@ -8,6 +8,8 @@ import ReCAPTCHA from "react-google-recaptcha";
 import mesh from "/graphics/mesh.svg";
 import axios from "axios";
 
+import {useWebData} from "./WebData";
+
 const MessagePrompt = ({ type, message, clearMessage }) => {
   if (!message) return null;
 
@@ -82,13 +84,13 @@ const Auth = () => {
       const response = await axios.post(regUrl, regData);
       console.log("Registration response:", response);
       console.log("Registration form submitted:", { playerName, email });
+      setOtpOverlay(true);
     } catch (error) {
       console.error("Registration error:", error);
       setMessageType("error");
       setMessage("Registration failed. Please try again.");
     } finally {
       setRegLoader(false);
-      setOtpOverlay(true);
     }
   };
 
@@ -102,13 +104,13 @@ const Auth = () => {
 
     try {
       setLoginLoader(true);
+      setOtpOverlay(true);
     } catch (error) {
       console.error("Error in login", error);
       setMessage("Login failed. Please check your email and try again.");
     } finally {
       console.log("Login form submitted:", { email });
       setLoginLoader(false);
-      setOtpOverlay(true);
     }
   };
 
@@ -128,7 +130,6 @@ const Auth = () => {
     };
 
     try {
-      setOtpLoader(true);
       const res = axios.post(otpApi, otpData);
       console.log("OTP verified:", res);
     } catch (error) {
@@ -138,7 +139,6 @@ const Auth = () => {
       console.error(error);
     } finally {
       setOtpLoader(false);
-      setOtpOverlay(false);
     }
   };
 
