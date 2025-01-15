@@ -7,10 +7,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBorderAll } from "@fortawesome/free-solid-svg-icons";
 
 const DBTable = () => {
-  const [data, setData] = useState([]); // Store table data
-  const [isLoading, setIsLoading] = useState(true); // Track loading state
-  const [currentPage, setCurrentPage] = useState(1); // Track the current page
-  const rowsPerPage = 5; // Number of rows per page
+  const [data, setData] = useState([]); 
+  const [isLoading, setIsLoading] = useState(true); 
+  const [currentPage, setCurrentPage] = useState(1);
+  const rowsPerPage = 5;
 
   // Fetch data from API
   useEffect(() => {
