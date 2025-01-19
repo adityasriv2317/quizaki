@@ -8,7 +8,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import mesh from "/graphics/mesh.svg";
 import axios from "axios";
 
-import {useWebData} from "./WebData";
+import { useWebData } from "./WebData";
 
 const MessagePrompt = ({ type, message, clearMessage }) => {
   if (!message) return null;
@@ -139,6 +139,7 @@ const Auth = () => {
       console.error(error);
     } finally {
       setOtpLoader(false);
+      userLogin(playerName);
     }
   };
 
@@ -282,39 +283,10 @@ const Auth = () => {
                 </button>
               </form>
             )}
-
-            <div className="text-center text-sm md:text-base mb-8">
-              {isLogin ? (
-                <>
-                  New user?{" "}
-                  <span
-                    onClick={() => {
-                      setIsLogin(false);
-                      setCaptcha(false);
-                    }}
-                    className="hover:cursor-pointer text-yellow-300"
-                  >
-                    Register
-                  </span>
-                </>
-              ) : (
-                <>
-                  Already registered?{" "}
-                  <span
-                    onClick={() => {
-                      setIsLogin(true);
-                      setCaptcha(false);
-                    }}
-                    className="hover:cursor-pointer text-yellow-300"
-                  >
-                    Login
-                  </span>
-                </>
-              )}
-            </div>
           </div>
         </div>
 
+        {/* otp overlay */}
         <div
           className={`${
             otpOverlay ? "flex absolute" : "hidden"

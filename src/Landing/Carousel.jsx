@@ -39,7 +39,7 @@ const Carousel = () => {
   };
 
   return (
-    <div className="mt-32 px-4">
+    <div id="features" className="mt-32 px-4">
       {/* head */}
       <p className="text-center text-mag text-xl font-semibold [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)]">
         CONVENIENT & ACCESSIBLE

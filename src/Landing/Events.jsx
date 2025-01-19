@@ -2,7 +2,7 @@ import React from "react";
 
 const Events = () => {
   return (
-    <div className="w-full my-10 flex flex-col font-poppins md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-8 px-4">
+    <div id="news" className="w-full my-10 flex flex-col font-poppins md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-8 px-4">
       {/* Left Section */}
       <div className="left w-full md:w-1/4 text-center md:text-left">
         <p className="text-mag font-semibold text-lg md:text-xl">CCC EVENTS</p>

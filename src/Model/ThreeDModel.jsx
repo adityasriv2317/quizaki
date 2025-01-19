@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
-import { MathUtils } from 'three'; // Correct import for PI
+import { MathUtils } from 'three';
 
 const Model = () => {
   const { scene } = useGLTF('/car.glb');
