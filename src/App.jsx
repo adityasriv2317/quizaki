@@ -6,6 +6,7 @@ import { WebData } from "./Security/WebData";
 import { AdminContext } from "./Security/AdminContext";
 import AdminDashboard from "./Pages/AdminDashboard";
 import QuizRoom from "./Pages/QuizRoom";
+import QuizPage from "./Pages/QuizPage";
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
             <Route path="/admin" element={<AdminDashboard />} />
             {/* <Route path="/room" element={<QuizRoom />} /> */}
             <Route path="/room/:roomId/:player" element={<QuizRoom />} />
+            <Route path="/quiz/:roomCode" element={<QuizPage />} />
           </Routes>
         </Router>
       </WebData>

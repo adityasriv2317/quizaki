@@ -26,7 +26,8 @@ const QuizRoom = () => {
 
     // Listen for quiz start event from the admin
     socket.on("startQuiz", () => {
-      navigate(`/quiz/${roomCode}`); // Redirect to quiz page
+      // Redirect to quiz page
+      navigate(`/quiz/${roomCode}`);
     });
 
     return () => {

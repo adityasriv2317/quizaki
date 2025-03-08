@@ -6,6 +6,7 @@ const webContext = createContext();
 export const WebData = ({ children }) => {
     const [siteData, setSiteData] = useState({
         user: "Aditya",
+        email: "aditya@mail.com",
         isLogin: true,
         code: null,
     });
