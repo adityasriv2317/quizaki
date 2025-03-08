@@ -5,8 +5,9 @@ const webContext = createContext();
 
 export const WebData = ({ children }) => {
     const [siteData, setSiteData] = useState({
-        user: "",
-        isLogin: false,
+        user: "Aditya",
+        isLogin: true,
+        code: null,
     });
 
     const userLogout = () => {
@@ -14,6 +15,7 @@ export const WebData = ({ children }) => {
             ...prev,
             user: null,
             isLogin: false,
+            code: null,
         }));
     };
 
@@ -26,7 +28,7 @@ export const WebData = ({ children }) => {
     };
 
     return (    
-        <webContext.Provider value={{ siteData, userLogin, userLogout }}>
+        <webContext.Provider value={{ siteData, setSiteData, userLogin, userLogout }}>
             {children}
         </webContext.Provider>
     );

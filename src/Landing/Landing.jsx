@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import hero from "/imgs/hero.svg";
 import Carousel from "./Carousel";
 import ThreeDModel from "../Model/ThreeDModel";
@@ -8,9 +8,46 @@ import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
   const [cta, setCta] = useState(false);
-  const { siteData } = useWebData();
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const { siteData, setSiteData } = useWebData();
   const [roomCode, setRoomCode] = useState("");
   const navigate = useNavigate();
+
+  const joinRoom = (e) => {
+    e.preventDefault();
+
+    if (!roomCode.trim()) {
+      console.error("Room code is required!");
+      return;
+    }
+
+    if (!siteData?.user) {
+      console.error("User information is missing!");
+      return;
+    }
+
+    try {
+      setSiteData((prev) => ({
+        ...prev,
+        code: roomCode,
+      }));
+      setHasSubmitted(true);
+    } finally {
+      console.log("updated");
+    }
+  };
+
+  useEffect(() => {
+    if (
+      hasSubmitted &&
+      roomCode &&
+      siteData.code === roomCode &&
+      siteData.user
+    ) {
+      console.log("code:", siteData.code, "roomCode:", roomCode);
+      navigate(`/room/${roomCode}/${siteData.user}`);
+    }
+  }, [hasSubmitted, siteData.code, roomCode, siteData.user, navigate]);
 
   return (
     <div className="flex flex-col md:flex-row text-white md:justify-between w-full md:mt-24 mt-6 h-screen">
@@ -65,7 +102,15 @@ const Landing = () => {
       >
         <div className="bg-gradient-to-b from-[rgb(183,67,88)] to-[rgb(129,41,57)] max-w-[80vw] shadow-xl mx-auto max-h-screen overflow-auto border rounded-lg">
           <button
-            onClick={() => setCta(false)}
+            onClick={() => {
+              setCta(false);
+              setRoomCode("");
+              setSiteData((prev) => ({
+                ...prev,
+                code: "",
+              }));
+              setHasSubmitted(false);
+            }}
             className="relative z-[52] top-0 right-0 border font-oxanium font-bold bg-white text-mag [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-4 py-2 rounded-br-xl"
             aria-label="Close Modal"
           >
@@ -77,18 +122,23 @@ const Landing = () => {
               <p className="text-white text-xl font-semibold">
                 Enter room code to continue
               </p>
-              <form action="" className="flex flex-col items-center mt-4">
+              <form
+                onSubmit={joinRoom}
+                className="flex flex-col items-center mt-4"
+              >
                 <input
                   type="text"
-                  className="rounded-md px-4 py-2 w-full placeholder:text-center text-gray-700 text-sm md:text-base"
+                  name="roomCode"
+                  className="rounded-md px-4 py-2 w-full text-center text-gray-700 text-sm md:text-base"
                   placeholder="Enter room code here..."
                   onChange={(e) => {
                     setRoomCode(e.target.value);
                   }}
+                  value={roomCode}
                 />
                 <button
                   type="submit"
-                  className="bg-mag hover:bg-[rgb(209,71,94)] font-oxanium border [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-4 py-2 rounded-md shadow-xl mt-2"
+                  className="bg-mag hover:bg-[rgb(209,71,94)] cursor-pointer font-oxanium border [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-4 py-2 rounded-md shadow-xl mt-2"
                 >
                   Join
                 </button>
