@@ -8,13 +8,19 @@ export const AdminProvider = ({ children }) => {
   const [adminData, setAdminData] = useState(null);
 
   useEffect(() => {
-    // Check for existing admin session in localStorage
     const storedAdminData = localStorage.getItem('adminData');
     if (storedAdminData) {
-      const parsedData = JSON.parse(storedAdminData);
-      setAdminID(parsedData.email);
-      setAdminData(parsedData);
-      setIsAdmin(true);
+      try {
+        const parsedData = JSON.parse(storedAdminData);
+        if (parsedData && parsedData.email) {
+          setAdminID(parsedData.email);
+          setAdminData(parsedData);
+          setIsAdmin(true);
+        }
+      } catch (error) {
+        console.error('Error parsing admin data:', error);
+        localStorage.removeItem('adminData');
+      }
     }
   }, []);
 
@@ -22,7 +28,8 @@ export const AdminProvider = ({ children }) => {
     const adminInfo = {
       email,
       loginTime: new Date().toISOString(),
-      lastActive: new Date().toISOString()
+      lastActive: new Date().toISOString(),
+      sessionExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24 hours
     };
 
     setAdminID(email);

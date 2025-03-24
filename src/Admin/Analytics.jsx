@@ -2,14 +2,18 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 
-const Analytics = () => {
+const Analytics = ({ selectedQuiz }) => {
   const [latestQuiz, setLatestQuiz] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const location = useLocation();
-  const selectedQuiz = location.state?.selectedQuiz;
 
   useEffect(() => {
+    if (selectedQuiz) {
+      setLatestQuiz(selectedQuiz);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchLatestQuiz = async () => {
       setIsLoading(true);
       try {

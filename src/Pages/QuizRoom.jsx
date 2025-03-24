@@ -40,15 +40,7 @@ const QuizRoom = () => {
   return (
     <div className="h-screen w-screen flex flex-col bg-gradient-to-br from-[#b74358] to-[#812939] text-white">
       {/* Top Bar */}
-      <div className="w-full p-4 flex flex-col md:flex-row gap-3 justify-center">
-        <div
-          className="font-oxanium md:hidden text-2xl"
-          onClick={() => {
-            navigate("/");
-          }}
-        >
-          QUIZAKI
-        </div>
+      <div className="w-full p-4 flex flex-row gap-3 justify-center">
         <div className="bg-white text-black p-4 shadow-lg text-center w-full max-w-sm rounded-lg font-oxanium">
           <span className="text-lg md:text-xl font-semibold">
             Room Code: {roomCode || "N/A"}
@@ -62,9 +54,9 @@ const QuizRoom = () => {
       </div>
 
       {/* Main Section */}
-      <div className="flex flex-col md:flex-row flex-grow gap-4 px-4 pb-4 items-center md:items-stretch">
+      <div className="flex flex-col md:flex-row flex-grow gap-3 md:gap-4 px-4 pb-4 items-center md:items-stretch">
         {/* Left Section - Countdown */}
-        <div className="w-full md:w-1/4 flex flex-col justify-center items-center rounded-md bg-white text-black p-6 shadow-md">
+        <div className="w-full md:w-1/4 flex flex-col justify-center items-center rounded-md bg-white text-black p-2 md:p-6 shadow-md">
           <h3 className="text-xl md:text-2xl font-bold">Quiz Starts In</h3>
           <p className="text-3xl md:text-4xl font-semibold text-[#b74358]">
             {countdown}s

@@ -28,7 +28,7 @@ const DesktopLayout = ({
       {/* Content Container */}
       <div className="flex flex-col md:flex-row flex-grow gap-4 items-center md:items-stretch">
         {/* Left Panel (Fixed Height on Desktop) */}
-        <div className="w-full md:w-3/12 h-auto md:h-[80vh] md:mb-0 md:mt-auto bg-gray-400 text-black p-6 shadow-md rounded-md flex flex-col justify-between items-center">
+        <div className="w-full md:w-3/12 h-auto md:h-[80vh] md:mb-0 md:mt-auto bg-gray-200 text-black p-6 shadow-md rounded-md flex flex-col justify-between items-center">
           {/* Timer */}
           <CountdownTimer
             duration={30}

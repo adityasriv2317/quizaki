@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const DBTable = () => {
+const DBTable = ({ onQuizSelect }) => {  // Add this prop
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -98,6 +98,9 @@ const DBTable = () => {
 
   // Update pagination controls to use new handler
   const handleQuizClick = (quiz) => {
+    if (onQuizSelect) {
+      onQuizSelect(quiz);
+    }
     navigate('/admin/dashboard', { state: { current: "analytics" } });
   };
 

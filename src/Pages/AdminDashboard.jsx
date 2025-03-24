@@ -13,7 +13,9 @@ import DBTable from "./DBTable";
 import Analytics from "../Admin/Analytics";
 import Quizzes from "../Admin/Quizzes";
 import CreateQuiz from "../Admin/CreateQuiz";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
+const navigate = useNavigate;
 
 const dashboard = () => {
   return (
@@ -61,6 +63,53 @@ const AdminDashboard = () => {
   const [current, setCurrent] = useState("dashboard");
   const [menuOpen, setMenuOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedQuiz, setSelectedQuiz] = useState(null); // Add this state
+
+  const handleQuizSelect = (quiz) => {
+    setSelectedQuiz(quiz);
+    setCurrent("analytics");
+  };
+
+  // Update the analytics function to use selectedQuiz
+  const analytics = () => {
+    return <Analytics selectedQuiz={selectedQuiz} />;
+  };
+
+  // Update the dashboard function to pass onQuizSelect
+  const dashboard = () => {
+    return (
+      <div>
+        <div className="flex flex-col lg:flex-row my-9 space-y-6 lg:space-y-0">
+          <div className="w-full lg:w-3/4 p-6 flex flex-row text-2xl rounded-xl shadow-xl text-white bg-[rgb(137,207,251)]">
+            <div className="flex-1">
+              <p className="font-semibold text-xl md:text-2xl lg:text-3xl [text-shadow:0_0_2px_black]">
+                QUIZ TITLE
+              </p>
+              <p className="mt-2 text-sm md:text-base lg:text-lg">
+                Use unique quiz titles for some unnecessary reasons...
+              </p>
+              <div className="rounded-md py-1 px-2 mt-8 w-fit text-sm md:text-base lg:text-lg cursor-pointer hover:bg-yellow-300 text-black [text-shadow:0_0_0] bg-yellow-400">
+                &gt; &lt;
+              </div>
+            </div>
+            <img src={graphic} alt="Graphic" className="w-auto" />
+          </div>
+
+          <Link
+            to="/admin/create"
+            className="hidden md:block w-full lg:w-1/4 p-6"
+          >
+            <img
+              src={create}
+              alt="Create"
+              className="shadow-xl cursor-pointer"
+            />
+          </Link>
+        </div>
+        <DBTable onQuizSelect={handleQuizSelect} />
+      </div>
+    );
+  };
 
   return isAdmin && admin === adminID ? (
     <div className="p-0">
@@ -113,6 +162,15 @@ const AdminDashboard = () => {
             >
               QUIZZES
             </p>
+            <Link
+              className={`fixed bottom-16 left-5 py-2 px-4 block md:hidden bg-gray-700 cursor-pointer rounded-md text-xl`}
+              onClick={() => {
+                setCurrent("quizzes");
+                setMenuOpen(false);
+              }}
+            >
+              CREATE QUIZ
+            </Link>
           </div>
         </div>
 
@@ -122,7 +180,9 @@ const AdminDashboard = () => {
           <div className="rounded-lg flex shadow-xl flex-row justify-between items-center mt-5 bg-white">
             <div className="flex items-center md:pl-4">
               <button
-                className="lg:hidden mx-4 z-50 text-3xl text-black"
+                className={`lg:hidden mx-4 z-50 text-3xl ${
+                  menuOpen ? "text-white" : "text-black"
+                }`}
                 onClick={() => setMenuOpen(!menuOpen)}
               >
                 {menuOpen ? (
@@ -183,10 +243,9 @@ const AdminDashboard = () => {
                         // Clear admin data from context
                         setAdmin(null);
                         // Clear from localStorage
-                        localStorage.removeItem("adminID");
-                        localStorage.removeItem("isAdmin");
-                        // Redirect or refresh page
-                        window.location.reload();
+                        localStorage.removeItem("adminData");
+                        // Navigate to home page
+                        window.location.href = "/";
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                     >
