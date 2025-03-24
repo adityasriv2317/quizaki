@@ -193,81 +193,48 @@ const QuizPage = () => {
   const [progress, setProgress] = useState(0);
   const [question, setQuestion] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
   const totalQuestions = 10;
 
   const isMobile = useMediaQuery({ maxWidth: 900 });
 
-  const handleAnswerSubmit = () => {
-    if (selectedOption) {
-      socket.emit('submitAnswer', {
-        questionId: question.id,
-        answer: selectedOption,
-        timeLeft: countdown
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (countdown === 0 && question) {
-      handleAnswerSubmit();
-    }
-  }, [countdown, question]);
-
   useEffect(() => {
     const countdownInterval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          handleAnswerSubmit();
-          return 0;
-        }
-        return prev - 1;
-      });
+      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
     socket.on("newQuestion", (data) => {
       setQuestion(data);
-      setSelectedOption(null);
       setCountdown(30);
       setProgress(((data.index + 1) / totalQuestions) * 100);
     });
 
-    socket.on("answerResult", (data) => {
-      if (data.correct) {
-        setScore(prev => prev + (data.timeBonus || 0));
-      }
-    });
-
     socket.on("endQuiz", () => {
-      navigate("/results", { state: { finalScore: score } });
+      navigate("/results");
     });
 
     return () => {
       clearInterval(countdownInterval);
       socket.off("newQuestion");
-      socket.off("answerResult");
       socket.off("endQuiz");
     };
-  }, [navigate, score]);
-
-  const handleOptionSelect = (option) => {
-    setSelectedOption(option);
-    handleAnswerSubmit();
-  };
-
-  const props = {
-    siteData: { ...siteData, user: { ...siteData?.user, score } },
-    progress,
-    question,
-    selectedOption,
-    setSelectedOption: handleOptionSelect,
-    countdown
-  };
+  }, [navigate]);
 
   return isMobile ? (
-    <MobileLayout {...props} />
+    <MobileLayout
+      progress={progress}
+      question={question}
+      selectedOption={selectedOption}
+      setSelectedOption={setSelectedOption}
+      countdown={countdown}
+    />
   ) : (
-    <DesktopLayout {...props} />
+    <DesktopLayout
+      siteData={siteData}
+      progress={progress}
+      question={question}
+      selectedOption={selectedOption}
+      setSelectedOption={setSelectedOption}
+    />
   );
 };
 
