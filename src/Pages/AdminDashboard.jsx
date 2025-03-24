@@ -10,6 +10,10 @@ import {
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
 import DBTable from "./DBTable";
+import Analytics from "../Admin/Analytics";
+import Quizzes from "../Admin/Quizzes";
+import CreateQuiz from "../Admin/CreateQuiz";
+import { Link } from "react-router-dom";
 
 const dashboard = () => {
   return (
@@ -31,9 +35,9 @@ const dashboard = () => {
           <img src={graphic} alt="Graphic" className="w-full lg:w-auto" />
         </div>
 
-        <div className="hidden md:block w-full lg:w-1/4 p-6">
+        <Link to="/admin/create" className="hidden md:block w-full lg:w-1/4 p-6">
           <img src={create} alt="Create" className="shadow-xl cursor-pointer" />
-        </div>
+        </Link>
       </div>
       <DBTable />
     </div>
@@ -41,16 +45,16 @@ const dashboard = () => {
 };
 
 const analytics = () => {
-  return <div className="flex my-10">Analytics</div>;
+  return <Analytics />;
 };
 
 const quizzes = () => {
-  return <div className="flex my-10">Quizzes</div>;
+  return <Quizzes />;
 };
 
 const AdminDashboard = () => {
   const { isAdmin, adminID } = useAdminContext();
-  const [admin, setAdmin] = useState("admin@ccc.com");
+  const [admin, setAdmin] = useState("test@example.com");
   const [current, setCurrent] = useState("dashboard");
   const [menuOpen, setMenuOpen] = useState(false);
 

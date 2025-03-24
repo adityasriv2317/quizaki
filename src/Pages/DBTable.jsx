@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState  } from "react";
 
 const DBTable = () => {
   const [data, setData] = useState([]); // Store table data
