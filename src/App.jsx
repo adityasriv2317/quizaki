@@ -11,6 +11,7 @@ import AdminLogin from "./Pages/AdminLogin";
 import ProtectedRoute from "./Security/ProtectedRoute";
 import { AdminProvider } from "./Security/AdminContext";
 import CreateQuiz from "./Admin/CreateQuiz";
+import Analytics from "./Admin/Analytics";
 
 const App = () => {
   return (
@@ -25,23 +26,7 @@ const App = () => {
 
             {/* Protected admin routes */}
             <Route
-              path="/admin/dashboard"
-              element={
-                <ProtectedRoute>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/analytics"
-              element={
-                <ProtectedRoute>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/quizzes"
+              path="/admin/*"
               element={
                 <ProtectedRoute>
                   <AdminDashboard />

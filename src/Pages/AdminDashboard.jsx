@@ -18,7 +18,7 @@ import { Link } from "react-router-dom";
 const dashboard = () => {
   return (
     <div>
-      <div className="flex flex-col lg:flex-row my-10 space-y-6 lg:space-y-0">
+      <div className="flex flex-col lg:flex-row my-9 space-y-6 lg:space-y-0">
         <div className="w-full lg:w-3/4 p-6 flex flex-row text-2xl rounded-xl shadow-xl text-white bg-[rgb(137,207,251)]">
           <div className="flex-1">
             <p className="font-semibold text-xl md:text-2xl lg:text-3xl [text-shadow:0_0_2px_black]">
