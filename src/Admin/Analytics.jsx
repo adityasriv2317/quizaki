@@ -68,7 +68,8 @@ const Analytics = ({ selectedQuiz }) => {
   return (
     <div className="p-4 font-oxanium">
       <div className="max-w-2xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-6">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Latest Quiz Control</h2>
+        <h2 className="text-2xl text-center font-semibold text-gray-800">Quiz Control Panel</h2>
+        <div className="bg-gray-400 w-full h-0.5 my-3"></div>
         
         {isLoading ? (
           <div className="flex justify-center items-center py-8">

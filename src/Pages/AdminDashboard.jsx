@@ -11,24 +11,36 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import DBTable from "./DBTable";
 import Analytics from "../Admin/Analytics";
-import Quizzes from "../Admin/Quizzes";
-import CreateQuiz from "../Admin/CreateQuiz";
 import { Link, useNavigate } from "react-router-dom";
 
-const navigate = useNavigate;
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const { isAdmin, adminID, logout } = useAdminContext();
+  const [current, setCurrent] = useState("dashboard");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedQuiz, setSelectedQuiz] = useState(null);
 
-const dashboard = () => {
-  return (
+  const handleQuizSelect = (quiz) => {
+    setSelectedQuiz(quiz);
+    setCurrent("analytics");
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/admin/login");
+  };
+
+  const renderDashboard = () => (
     <div>
       <div className="flex flex-col lg:flex-row my-9 space-y-6 lg:space-y-0">
         <div className="w-full lg:w-3/4 p-6 flex flex-row text-2xl rounded-xl shadow-xl text-white bg-[rgb(137,207,251)]">
           <div className="flex-1">
             <p className="font-semibold text-xl md:text-2xl lg:text-3xl [text-shadow:0_0_2px_black]">
-              QUIZ TITLE
+              {selectedQuiz?.title || "QUIZ TITLE"}
             </p>
             <p className="mt-2 text-sm md:text-base lg:text-lg">
-              DESCRIPTION OF QUIZ & THE BACKGROUND IS THE COVER POSTER OF THE
-              QUIZ
+              {selectedQuiz?.description || "DESCRIPTION OF QUIZ"}
             </p>
             <div className="rounded-md py-1 px-2 mt-8 w-fit text-sm md:text-base lg:text-lg cursor-pointer hover:bg-yellow-300 text-black [text-shadow:0_0_0] bg-yellow-400">
               Learn More
@@ -37,85 +49,39 @@ const dashboard = () => {
           <img src={graphic} alt="Graphic" className="w-full lg:w-auto" />
         </div>
 
-        <Link
-          to="/admin/create"
-          className="hidden md:block w-full lg:w-1/4 p-6"
-        >
+        <Link to="/admin/create" className="hidden md:block w-full lg:w-1/4 p-6">
           <img src={create} alt="Create" className="shadow-xl cursor-pointer" />
         </Link>
       </div>
-      <DBTable />
+      <DBTable onQuizSelect={handleQuizSelect} />
     </div>
   );
-};
 
-const analytics = () => {
-  return <Analytics />;
-};
-
-const quizzes = () => {
-  return <Quizzes />;
-};
-
-const AdminDashboard = () => {
-  const { isAdmin, adminID } = useAdminContext();
-  const [admin, setAdmin] = useState("test@example.com");
-  const [current, setCurrent] = useState("dashboard");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedQuiz, setSelectedQuiz] = useState(null); // Add this state
-
-  const handleQuizSelect = (quiz) => {
-    setSelectedQuiz(quiz);
-    setCurrent("analytics");
+  const renderContent = () => {
+    switch (current) {
+      case "dashboard":
+        return renderDashboard();
+      case "analytics":
+        return <Analytics selectedQuiz={selectedQuiz} />;
+      case "quizzes":
+        return <DBTable />;
+      default:
+        return renderDashboard();
+    }
   };
 
-  // Update the analytics function to use selectedQuiz
-  const analytics = () => {
-    return <Analytics selectedQuiz={selectedQuiz} />;
-  };
-
-  // Update the dashboard function to pass onQuizSelect
-  const dashboard = () => {
+  if (!isAdmin || !adminID) {
     return (
-      <div>
-        <div className="flex flex-col lg:flex-row my-9 space-y-6 lg:space-y-0">
-          <div className="w-full lg:w-3/4 p-6 flex flex-row text-2xl rounded-xl shadow-xl text-white bg-[rgb(137,207,251)]">
-            <div className="flex-1">
-              <p className="font-semibold text-xl md:text-2xl lg:text-3xl [text-shadow:0_0_2px_black]">
-                QUIZ TITLE
-              </p>
-              <p className="mt-2 text-sm md:text-base lg:text-lg">
-                Use unique quiz titles for some unnecessary reasons...
-              </p>
-              <div className="rounded-md py-1 px-2 mt-8 w-fit text-sm md:text-base lg:text-lg cursor-pointer hover:bg-yellow-300 text-black [text-shadow:0_0_0] bg-yellow-400">
-                &gt; &lt;
-              </div>
-            </div>
-            <img src={graphic} alt="Graphic" className="w-auto" />
-          </div>
-
-          <Link
-            to="/admin/create"
-            className="hidden md:block w-full lg:w-1/4 p-6"
-          >
-            <img
-              src={create}
-              alt="Create"
-              className="shadow-xl cursor-pointer"
-            />
-          </Link>
-        </div>
-        <DBTable onQuizSelect={handleQuizSelect} />
+      <div className="w-screen h-screen flex items-center justify-center text-xl">
+        You are not authorized
       </div>
     );
-  };
+  }
 
-  return isAdmin && admin === adminID ? (
+  return (
     <div className="p-0">
-      {/* Main Panels */}
       <div className="flex flex-col lg:flex-row h-auto lg:h-screen text-white">
-        {/* Left Panel with Hamburger Menu */}
+        {/* Left Panel */}
         <div
           className={`fixed lg:static border-r z-50 bg-gradient-to-b from-[rgb(183,67,88)] to-[rgb(242,75,105)] w-[70vw] lg:w-[18vw] h-screen p-4 text-center transform transition-transform duration-300 ease-in-out ${
             menuOpen ? "translate-x-0" : "-translate-x-full"
@@ -123,51 +89,26 @@ const AdminDashboard = () => {
         >
           <p className="text-4xl mt-6">QUIZAKI</p>
           <div className="flex flex-col mt-12 space-y-2 my-2">
-            <p
-              className={`py-1 cursor-pointer rounded-md text-xl ${
-                current === "dashboard"
-                  ? "bg-black"
-                  : "hover:bg-[rgba(255,255,255,0.2)]"
-              }`}
-              onClick={() => {
-                setCurrent("dashboard");
-                setMenuOpen(false);
-              }}
-            >
-              DASHBOARD
-            </p>
-            <p
-              className={`py-1 cursor-pointer rounded-md text-xl ${
-                current === "analytics"
-                  ? "bg-black"
-                  : "hover:bg-[rgba(255,255,255,0.2)]"
-              }`}
-              onClick={() => {
-                setCurrent("analytics");
-                setMenuOpen(false);
-              }}
-            >
-              ANALYTICS
-            </p>
-            <p
-              className={`py-1 cursor-pointer rounded-md text-xl ${
-                current === "quizzes"
-                  ? "bg-black"
-                  : "hover:bg-[rgba(255,255,255,0.2)]"
-              }`}
-              onClick={() => {
-                setCurrent("quizzes");
-                setMenuOpen(false);
-              }}
-            >
-              QUIZZES
-            </p>
+            {["dashboard", "analytics", "quizzes"].map((item) => (
+              <p
+                key={item}
+                className={`py-1 cursor-pointer rounded-md text-xl capitalize ${
+                  current === item
+                    ? "bg-black"
+                    : "hover:bg-[rgba(255,255,255,0.2)]"
+                }`}
+                onClick={() => {
+                  setCurrent(item);
+                  setMenuOpen(false);
+                }}
+              >
+                {item}
+              </p>
+            ))}
             <Link
-              className={`fixed bottom-16 left-5 py-2 px-4 block md:hidden bg-gray-700 cursor-pointer rounded-md text-xl`}
-              onClick={() => {
-                setCurrent("quizzes");
-                setMenuOpen(false);
-              }}
+              to="/admin/create"
+              className="py-1 block md:hidden cursor-pointer rounded-md text-xl hover:bg-[rgba(255,255,255,0.2)]"
+              onClick={() => setMenuOpen(false)}
             >
               CREATE QUIZ
             </Link>
@@ -185,37 +126,31 @@ const AdminDashboard = () => {
                 }`}
                 onClick={() => setMenuOpen(!menuOpen)}
               >
-                {menuOpen ? (
-                  <FontAwesomeIcon icon={faTimes} />
-                ) : (
-                  <FontAwesomeIcon icon={faBars} />
-                )}
+                <FontAwesomeIcon icon={menuOpen ? faTimes : faBars} />
               </button>
-              {current === "dashboard" && (
-                <p className="text-xl lg:text-2xl py-2 flex items-center">
-                  Dashboard
+              <p className="text-xl lg:text-2xl px-4 py-2 flex items-center capitalize">
+                {current}
+                {current === "dashboard" && (
                   <FontAwesomeIcon
                     className="text-blue-400 ml-2"
                     icon={faBorderAll}
                   />
-                </p>
-              )}
-              {current === "analytics" && (
-                <p className="text-xl lg:text-2xl px-4 py-2">Analytics</p>
-              )}
-              {current === "quizzes" && (
-                <p className="text-xl lg:text-2xl px-4 py-2">Quizzes</p>
-              )}
+                )}
+              </p>
             </div>
+
+            {/* Admin Dropdown */}
             <div className="relative">
               <div
                 className="flex items-center hover:bg-[rgba(0,0,0,0.1)] cursor-pointer p-2 rounded-r-lg"
-                onClick={() => setShowDropdown((prev) => !prev)}
+                onClick={() => setShowDropdown(!showDropdown)}
               >
                 <div className="h-8 aspect-square rounded-full bg-gray-500"></div>
                 <p className="mx-2">ADMIN</p>
                 <svg
-                  className="w-4 h-4"
+                  className={`w-4 h-4 transform transition-transform ${
+                    showDropdown ? "rotate-180" : ""
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -235,18 +170,11 @@ const AdminDashboard = () => {
                     <div className="px-4 py-2 text-sm text-gray-700">
                       Signed in as
                       <br />
-                      <span className="font-medium">{admin}</span>
+                      <span className="font-medium">{adminID}</span>
                     </div>
                     <hr className="my-1" />
                     <button
-                      onClick={() => {
-                        // Clear admin data from context
-                        setAdmin(null);
-                        // Clear from localStorage
-                        localStorage.removeItem("adminData");
-                        // Navigate to home page
-                        window.location.href = "/";
-                      }}
+                      onClick={handleLogout}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                     >
                       Logout
@@ -258,18 +186,10 @@ const AdminDashboard = () => {
           </div>
 
           {/* Dynamic Content */}
-          {current === "dashboard" && dashboard()}
-          {current === "analytics" && analytics()}
-          {current === "quizzes" && quizzes()}
+          {renderContent()}
         </div>
       </div>
-
-      {/* Footer */}
       <Footer />
-    </div>
-  ) : (
-    <div className="w-screen h-screen flex items-center justify-center text-xl">
-      You are not authorized
     </div>
   );
 };
