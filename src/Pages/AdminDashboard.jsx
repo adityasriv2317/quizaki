@@ -35,7 +35,10 @@ const dashboard = () => {
           <img src={graphic} alt="Graphic" className="w-full lg:w-auto" />
         </div>
 
-        <Link to="/admin/create" className="hidden md:block w-full lg:w-1/4 p-6">
+        <Link
+          to="/admin/create"
+          className="hidden md:block w-full lg:w-1/4 p-6"
+        >
           <img src={create} alt="Create" className="shadow-xl cursor-pointer" />
         </Link>
       </div>
@@ -57,6 +60,7 @@ const AdminDashboard = () => {
   const [admin, setAdmin] = useState("test@example.com");
   const [current, setCurrent] = useState("dashboard");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   return isAdmin && admin === adminID ? (
     <div className="p-0">
@@ -143,9 +147,54 @@ const AdminDashboard = () => {
                 <p className="text-xl lg:text-2xl px-4 py-2">Quizzes</p>
               )}
             </div>
-            <div className="flex items-center hover:bg-[rgba(0,0,0,0.1)] cursor-pointer p-2">
-              <p className="mr-2">ADMIN</p>
-              <div className="h-8 aspect-square rounded-full bg-gray-500"></div>
+            <div className="relative">
+              <div
+                className="flex items-center hover:bg-[rgba(0,0,0,0.1)] cursor-pointer p-2 rounded-r-lg"
+                onClick={() => setShowDropdown((prev) => !prev)}
+              >
+                <div className="h-8 aspect-square rounded-full bg-gray-500"></div>
+                <p className="mx-2">ADMIN</p>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50">
+                  <div className="py-1">
+                    <div className="px-4 py-2 text-sm text-gray-700">
+                      Signed in as
+                      <br />
+                      <span className="font-medium">{admin}</span>
+                    </div>
+                    <hr className="my-1" />
+                    <button
+                      onClick={() => {
+                        // Clear admin data from context
+                        setAdmin(null);
+                        // Clear from localStorage
+                        localStorage.removeItem("adminID");
+                        localStorage.removeItem("isAdmin");
+                        // Redirect or refresh page
+                        window.location.reload();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

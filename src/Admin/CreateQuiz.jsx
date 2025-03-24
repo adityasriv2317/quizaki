@@ -1,22 +1,55 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faTrash, faSave, faQuestionCircle, faListUl, faArrowLeft, faImage, faTimes, faClock, faCalendar } from "@fortawesome/free-solid-svg-icons";
+import {
+  faPlus,
+  faTrash,
+  faSave,
+  faQuestionCircle,
+  faListUl,
+  faArrowLeft,
+  faImage,
+  faTimes,
+  faClock,
+  faCalendar,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import mesh from "/graphics/mesh.svg";
+import axios from "axios";
+
+const createAPI = "https://ccc-quiz.onrender.com/admin/CreateQuiz";
 
 const CreateQuiz = () => {
   const navigate = useNavigate();
-  const [quizTitle, setQuizTitle] = useState('');
-  const [quizDescription, setQuizDescription] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [quizTitle, setQuizTitle] = useState("");
+  const [quizDescription, setQuizDescription] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [timeLimit, setTimeLimit] = useState(30); // Default 30 seconds per question
   const [questions, setQuestions] = useState([
-    { question: '', options: ['', '', '', ''], correctAnswer: 0, image: null }
+    {
+      question: "",
+      options: ["", "", "", ""],
+      correctAnswer: null,
+      image: null,
+      category: "",
+      difficulty: "",
+    },
   ]);
+  const [loading, setLoading] = useState(false);
 
   const addQuestion = () => {
-    setQuestions([...questions, { question: '', options: ['', '', '', ''], correctAnswer: 0, image: null }]);
+    setQuestions([
+      ...questions,
+      {
+        question: "",
+        options: ["", "", "", ""],
+        correctAnswer: null,
+        image: null,
+        category: "",
+        difficulty: "",
+      },
+    ]);
   };
 
   const removeQuestion = (index) => {
@@ -41,28 +74,51 @@ const CreateQuiz = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        updateQuestion(questionIndex, 'image', reader.result);
+        updateQuestion(questionIndex, "image", reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
   const removeImage = (questionIndex) => {
-    updateQuestion(questionIndex, 'image', null);
+    updateQuestion(questionIndex, "image", null);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: Add API call to save quiz
-    console.log({ 
-      quizTitle, 
-      quizDescription, 
-      startDate, 
-      endDate, 
-      timeLimit,
-      questions 
-    });
-    navigate('/admin/dashboard');
+    setLoading(true);
+
+    // Format quiz data according to the required structure
+    const quizData = {
+      quizId: `quiz${Date.now()}`, // Generate a unique quiz ID
+      email: "saurabhsri.mau@gmail.com", // You might want to get this from your auth context
+      quizTitle,
+      status: false,
+      players: null,
+      questions: questions.map((q, index) => ({
+        quesKey: `q${Date.now()}${index}`, // Generate a unique question key
+        questionText: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer === null ? null : q.options[q.correctAnswer], // Send the actual answer text
+        category: q.category,
+        difficulty: q.difficulty
+      }))
+    };
+
+    try {
+      const response = await axios.post(createAPI, quizData);
+
+      if (response.status === 201) {
+        console.log("Quiz created successfully!");
+        navigate("/admin/dashboard");
+      } else {
+        console.error("Failed to create quiz:", response.data);
+      }
+    } catch (error) {
+      console.error("Error creating quiz:", error.response?.data || error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -72,50 +128,67 @@ const CreateQuiz = () => {
         className="absolute h-[88vh] w-screen bottom-0 z-0"
         alt=""
       />
-      
+
       <div className="relative z-10 px-4 md:px-16 pt-8">
         {/* Navigation and Header */}
         <div className="backdrop-blur-sm rounded-xl shadow-lg p-6 md:p-8 mb-8 border border-white/20">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
+          <div className="flex flex-wrap items-center justify-between gap-y-4">
+            {/* Left Section */}
+            <div className="flex flex-wrap items-center gap-4 md:gap-6">
               <button
-                onClick={() => navigate('/admin/dashboard')}
-                className="font-poppins font-semibold text-sm md:text-base z-50 bg-white hover:bg-white text-mag p-2 rounded-lg shadow-md [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] flex items-center space-x-2"
+                onClick={() => navigate("/admin/dashboard")}
+                className="font-poppins font-semibold text-sm md:text-base z-50 bg-white hover:bg-white text-mag px-4 py-2 rounded-lg shadow-md [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] flex items-center space-x-2"
               >
                 <FontAwesomeIcon icon={faArrowLeft} />
                 <span>Dashboard</span>
               </button>
+
               <div className="flex items-center space-x-4">
-                <span className="font-oxanium text-2xl md:text-2xl mt-1 text-white">QUIZAKI</span>
+                <span className="font-oxanium text-2xl text-white">
+                  QUIZAKI
+                </span>
                 <div className="h-8 w-px bg-white/20"></div>
-                <div className="flex items-center space-x-3">
-                  <FontAwesomeIcon icon={faListUl} className="text-[rgb(137,207,251)] text-xl" />
+                <div className="hidden md:flex items-center space-x-3">
+                  <FontAwesomeIcon
+                    icon={faListUl}
+                    className="text-[rgb(137,207,251)] text-xl"
+                  />
                   <p className="font-semibold text-xl md:text-2xl text-gray-50">
                     Create New Quiz
                   </p>
                 </div>
               </div>
             </div>
+
+            {/* Right Section */}
             <Link
               to="/"
-              className="font-poppins font-semibold text-sm md:text-base z-50 bg-white hover:bg-white text-mag p-2 rounded-lg shadow-md [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)]"
+              className="font-poppins font-semibold text-sm md:text-base z-50 bg-white hover:bg-white text-mag px-4 py-2 rounded-lg shadow-md [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] text-center"
             >
               Home
             </Link>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8 pb-8 max-w-7xl mx-auto">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-8 pb-8 max-w-7xl mx-auto"
+        >
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left Panel - Quiz Details and Timing */}
             <div className="lg:w-1/3 space-y-6">
               {/* Combined Quiz Details and Timing */}
               <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 md:p-8 space-y-6 border border-white/20">
                 <div className="flex items-center space-x-3 mb-6">
-                  <FontAwesomeIcon icon={faQuestionCircle} className="text-[rgb(137,207,251)] text-xl" />
-                  <h2 className="text-xl font-semibold text-gray-800">Quiz Settings</h2>
+                  <FontAwesomeIcon
+                    icon={faQuestionCircle}
+                    className="text-[rgb(137,207,251)] text-xl"
+                  />
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Quiz Settings
+                  </h2>
                 </div>
-                
+
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -133,10 +206,15 @@ const CreateQuiz = () => {
 
                   <div className="pt-4 border-t border-gray-200">
                     <div className="flex items-center space-x-3 mb-4">
-                      <FontAwesomeIcon icon={faClock} className="text-[rgb(137,207,251)] text-xl" />
-                      <h3 className="text-lg font-semibold text-gray-800">Timing Settings</h3>
+                      <FontAwesomeIcon
+                        icon={faClock}
+                        className="text-[rgb(137,207,251)] text-xl"
+                      />
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        Timing Settings
+                      </h3>
                     </div>
-                    
+
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -169,14 +247,19 @@ const CreateQuiz = () => {
                         <input
                           type="number"
                           value={timeLimit}
-                          onChange={(e) => setTimeLimit(Math.max(1, parseInt(e.target.value) || 1))}
+                          onChange={(e) =>
+                            setTimeLimit(
+                              Math.max(1, parseInt(e.target.value) || 1)
+                            )
+                          }
                           min="1"
                           className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
                           required
                         />
                       </div>
                       <div className="text-sm text-gray-500">
-                        Total Quiz Duration: {questions.length * timeLimit} seconds
+                        Total Quiz Duration: {questions.length * timeLimit}{" "}
+                        seconds
                       </div>
                     </div>
                   </div>
@@ -189,13 +272,18 @@ const CreateQuiz = () => {
               {/* Questions */}
               <div className="space-y-6">
                 {questions.map((q, questionIndex) => (
-                  <div key={questionIndex} className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 md:p-8 border border-white/20">
+                  <div
+                    key={questionIndex}
+                    className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 md:p-8 border border-white/20"
+                  >
                     <div className="flex justify-between items-center mb-6">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 rounded-full bg-[rgb(137,207,251)] flex items-center justify-center text-white font-semibold">
                           {questionIndex + 1}
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-800">Question {questionIndex + 1}</h3>
+                        <h3 className="text-lg font-semibold text-gray-800">
+                          Question {questionIndex + 1}
+                        </h3>
                       </div>
                       {questions.length > 1 && (
                         <button
@@ -207,7 +295,7 @@ const CreateQuiz = () => {
                         </button>
                       )}
                     </div>
-                    
+
                     <div className="space-y-4 md:space-y-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -216,7 +304,13 @@ const CreateQuiz = () => {
                         <input
                           type="text"
                           value={q.question}
-                          onChange={(e) => updateQuestion(questionIndex, 'question', e.target.value)}
+                          onChange={(e) =>
+                            updateQuestion(
+                              questionIndex,
+                              "question",
+                              e.target.value
+                            )
+                          }
                           className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
                           placeholder="Enter your question"
                           required
@@ -247,17 +341,27 @@ const CreateQuiz = () => {
                           <div className="flex items-center justify-center w-full">
                             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <FontAwesomeIcon icon={faImage} className="w-8 h-8 mb-2 text-gray-500" />
+                                <FontAwesomeIcon
+                                  icon={faImage}
+                                  className="w-8 h-8 mb-2 text-gray-500"
+                                />
                                 <p className="mb-2 text-sm text-gray-500">
-                                  <span className="font-semibold">Click to upload</span> or drag and drop
+                                  <span className="font-semibold">
+                                    Click to upload
+                                  </span>{" "}
+                                  or drag and drop
                                 </p>
-                                <p className="text-xs text-gray-500">PNG, JPG or GIF (MAX. 800x400px)</p>
+                                <p className="text-xs text-gray-500">
+                                  PNG, JPG or GIF (MAX. 800x400px)
+                                </p>
                               </div>
                               <input
                                 type="file"
                                 className="hidden"
                                 accept="image/*"
-                                onChange={(e) => handleImageUpload(questionIndex, e)}
+                                onChange={(e) =>
+                                  handleImageUpload(questionIndex, e)
+                                }
                               />
                             </label>
                           </div>
@@ -267,19 +371,34 @@ const CreateQuiz = () => {
                       {/* Options */}
                       <div className="space-y-3 md:space-y-4">
                         {q.options.map((option, optionIndex) => (
-                          <div key={optionIndex} className="flex items-center space-x-3 md:space-x-4">
+                          <div
+                            key={optionIndex}
+                            className="flex items-center space-x-3 md:space-x-4"
+                          >
                             <input
                               type="radio"
                               name={`correct-${questionIndex}`}
                               checked={q.correctAnswer === optionIndex}
-                              onChange={() => updateQuestion(questionIndex, 'correctAnswer', optionIndex)}
+                              onChange={() =>
+                                updateQuestion(
+                                  questionIndex,
+                                  "correctAnswer",
+                                  optionIndex
+                                )
+                              }
                               className="h-5 w-5 text-[rgb(137,207,251)] focus:ring-[rgb(137,207,251)]"
                             />
                             <div className="flex-1">
                               <input
                                 type="text"
                                 value={option}
-                                onChange={(e) => updateOption(questionIndex, optionIndex, e.target.value)}
+                                onChange={(e) =>
+                                  updateOption(
+                                    questionIndex,
+                                    optionIndex,
+                                    e.target.value
+                                  )
+                                }
                                 className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
                                 placeholder={`Option ${optionIndex + 1}`}
                                 required
@@ -287,6 +406,53 @@ const CreateQuiz = () => {
                             </div>
                           </div>
                         ))}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Category */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Category
+                          </label>
+                          <input
+                            type="text"
+                            value={q.category}
+                            onChange={(e) =>
+                              updateQuestion(
+                                questionIndex,
+                                "category",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
+                            placeholder="Enter category"
+                            required
+                          />
+                        </div>
+
+                        {/* Difficulty */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Difficulty
+                          </label>
+                          <select
+                            value={q.difficulty}
+                            onChange={(e) =>
+                              updateQuestion(
+                                questionIndex,
+                                "difficulty",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
+                            required
+                          >
+                            <option value="">Select difficulty</option>
+                            <option value="Easy">Easy</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Hard">Hard</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -306,9 +472,16 @@ const CreateQuiz = () => {
                 <button
                   type="submit"
                   className="flex items-center justify-center space-x-2 px-8 py-3 bg-[rgb(183,67,88)] text-white rounded-md hover:bg-[rgb(183,67,88)]/90 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  disabled={loading}
                 >
-                  <FontAwesomeIcon icon={faSave} />
-                  <span>Save Quiz</span>
+                  {loading ? (
+                    <FontAwesomeIcon icon={faSpinner} spin />
+                  ) : (
+                    <>
+                      <FontAwesomeIcon icon={faSave} />
+                      <span>Save Quiz</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

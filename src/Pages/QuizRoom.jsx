@@ -72,9 +72,22 @@ const QuizRoom = () => {
         </div>
 
         {/* Right Section - Loading Animation */}
-        <div className="w-full md:w-3/4 h-full flex flex-col justify-center gap-10 font-mono bg-white rounded-md items-center p-6">
-          <div className="animate-spin rounded-full h-16 w-16 md:h-20 md:w-20 border-t-4 border-gray-700"></div>
-          {/* Link to game */}
+        <iframe
+          src="https://sonic-boomgame.vercel.app/"
+          className="w-full md:w-3/4 h-full flex flex-col justify-center gap-10 font-mono bg-white rounded-md items-center"
+          title="Sonic Boom Game"
+          sandbox="allow-scripts allow-same-origin"
+        ></iframe>
+      </div>
+    </div>
+  );
+};
+
+export default QuizRoom;
+
+{
+  /* <div className="animate-spin rounded-full h-16 w-16 md:h-20 md:w-20 border-t-4 border-gray-700"></div>
+
           <a
             href="https://poki.com/"
             target="_blank"
@@ -82,11 +95,5 @@ const QuizRoom = () => {
             className="bg-[#b74358] rounded-md shadow-md p-3 md:p-4 uppercase text-sm md:text-base"
           >
             Play a Quick Game
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default QuizRoom;
+          </a> */
+}

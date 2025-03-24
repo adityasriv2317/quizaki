@@ -67,9 +67,17 @@ const AdminLogin = () => {
 
     try {
       setLoginLoader(true);
+      // For demo purposes using hardcoded credentials
+      // In production, this should be an API call
       if (email === 'test@example.com' && password === 'password') {
         await login(email);
-        navigate(from, { replace: true });
+        setMessageType("success");
+        setMessage("Login successful!");
+        
+        // Add a small delay to show success message
+        setTimeout(() => {
+          navigate(from, { replace: true });
+        }, 1000);
       } else {
         setMessageType("error");
         setMessage("Invalid credentials");
@@ -77,10 +85,19 @@ const AdminLogin = () => {
     } catch (err) {
       setMessageType("error");
       setMessage("An error occurred during login");
+      console.error("Login error:", err);
     } finally {
       setLoginLoader(false);
     }
   };
+
+  // Redirect if already logged in
+  useEffect(() => {
+    const adminData = localStorage.getItem('adminData');
+    if (adminData) {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   return (
     <div className="">
@@ -184,4 +201,4 @@ const AdminLogin = () => {
   );
 };
 
-export default AdminLogin; 
+export default AdminLogin;

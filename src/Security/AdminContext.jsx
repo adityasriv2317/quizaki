@@ -5,32 +5,41 @@ const AdminContext = createContext(null);
 export const AdminProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminID, setAdminID] = useState(null);
+  const [adminData, setAdminData] = useState(null);
 
   useEffect(() => {
     // Check for existing admin session in localStorage
-    const storedAdminID = localStorage.getItem('adminID');
-    if (storedAdminID) {
-      setAdminID(storedAdminID);
+    const storedAdminData = localStorage.getItem('adminData');
+    if (storedAdminData) {
+      const parsedData = JSON.parse(storedAdminData);
+      setAdminID(parsedData.email);
+      setAdminData(parsedData);
       setIsAdmin(true);
     }
   }, []);
 
   const login = async (email) => {
-    // Here you would typically make an API call to verify credentials
-    // For now, we'll just set the admin state
+    const adminInfo = {
+      email,
+      loginTime: new Date().toISOString(),
+      lastActive: new Date().toISOString()
+    };
+
     setAdminID(email);
+    setAdminData(adminInfo);
     setIsAdmin(true);
-    localStorage.setItem('adminID', email);
+    localStorage.setItem('adminData', JSON.stringify(adminInfo));
   };
 
   const logout = () => {
     setAdminID(null);
+    setAdminData(null);
     setIsAdmin(false);
-    localStorage.removeItem('adminID');
+    localStorage.removeItem('adminData');
   };
 
   return (
-    <AdminContext.Provider value={{ isAdmin, adminID, login, logout }}>
+    <AdminContext.Provider value={{ isAdmin, adminID, adminData, login, logout }}>
       {children}
     </AdminContext.Provider>
   );

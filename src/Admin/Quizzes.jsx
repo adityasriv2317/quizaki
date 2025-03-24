@@ -1,10 +1,9 @@
 import React from 'react'
+import DBTable from '../Pages/DBTable'
 
 const Quizzes = () => {
   return (
-    <div>
-      
-    </div>
+    <DBTable />
   )
 }
 
