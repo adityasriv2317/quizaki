@@ -14,6 +14,8 @@ const DesktopLayout = ({
   question,
   selectedOption,
   setSelectedOption,
+  onTimeUp,
+  countdown,
 }) => {
   return (
     <div className="min-h-screen w-full flex flex-col bg-gradient-to-br from-[#b74358] to-[#812939] text-white p-4">
@@ -32,7 +34,8 @@ const DesktopLayout = ({
           {/* Timer */}
           <CountdownTimer
             duration={30}
-            onTimeUp={() => console.log("Time's up!")}
+            onTimeUp={onTimeUp}
+            currentTime={countdown}
           />
 
           {/* Score */}
@@ -193,19 +196,46 @@ const QuizPage = () => {
   const [progress, setProgress] = useState(0);
   const [question, setQuestion] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const totalQuestions = 10;
 
   const isMobile = useMediaQuery({ maxWidth: 900 });
 
   useEffect(() => {
+    // Join quiz room when component mounts
+    socket.emit('joinQuiz', {
+      roomCode: siteData?.code,
+      userId: siteData?.user
+    });
+
     const countdownInterval = setInterval(() => {
-      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          handleTimeUp();
+          return 30;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
+    // Listen for new questions
     socket.on("newQuestion", (data) => {
-      setQuestion(data);
+      console.log("Received question:", data);
+      setQuestion({
+        text: data.text,
+        options: data.options,
+        image: data.image || null
+      });
+      setSelectedOption(null);
       setCountdown(30);
-      setProgress(((data.index + 1) / totalQuestions) * 100);
+      setCurrentQuestionIndex(data.index || currentQuestionIndex + 1);
+      setProgress(((currentQuestionIndex + 1) / totalQuestions) * 100);
+    });
+
+    // Request first question
+    socket.emit('requestNextQuestion', {
+      roomCode: siteData?.code,
+      currentIndex: -1
     });
 
     socket.on("endQuiz", () => {
@@ -216,25 +246,42 @@ const QuizPage = () => {
       clearInterval(countdownInterval);
       socket.off("newQuestion");
       socket.off("endQuiz");
+      socket.emit('leaveQuiz', {
+        roomCode: siteData?.code,
+        userId: siteData?.user
+      });
     };
-  }, [navigate]);
+  }, [navigate, siteData, currentQuestionIndex]);
+
+  const handleTimeUp = () => {
+    socket.emit('submitAnswer', {
+      roomCode: siteData?.code,
+      answer: selectedOption || '',
+      questionIndex: currentQuestionIndex
+    });
+
+    // Request next question
+    socket.emit('requestNextQuestion', {
+      roomCode: siteData?.code,
+      currentIndex: currentQuestionIndex
+    });
+  };
+
+  // Update layout props
+  const layoutProps = {
+    siteData,
+    progress,
+    question,
+    selectedOption,
+    setSelectedOption,
+    countdown,
+    onTimeUp: handleTimeUp
+  };
 
   return isMobile ? (
-    <MobileLayout
-      progress={progress}
-      question={question}
-      selectedOption={selectedOption}
-      setSelectedOption={setSelectedOption}
-      countdown={countdown}
-    />
+    <MobileLayout {...layoutProps} />
   ) : (
-    <DesktopLayout
-      siteData={siteData}
-      progress={progress}
-      question={question}
-      selectedOption={selectedOption}
-      setSelectedOption={setSelectedOption}
-    />
+    <DesktopLayout {...layoutProps} />
   );
 };
 
