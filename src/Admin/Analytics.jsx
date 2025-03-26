@@ -2,18 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation } from 'react-router-dom';
 
-const Analytics = ({ selectedQuiz }) => {
+const Analytics = () => {
   const [latestQuiz, setLatestQuiz] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const location = useLocation();
+  const selectedQuiz = location.state?.selectedQuiz;
 
   useEffect(() => {
-    if (selectedQuiz) {
-      setLatestQuiz(selectedQuiz);
-      setIsLoading(false);
-      return;
-    }
-
     const fetchLatestQuiz = async () => {
       setIsLoading(true);
       try {
@@ -68,8 +64,7 @@ const Analytics = ({ selectedQuiz }) => {
   return (
     <div className="p-4 font-oxanium">
       <div className="max-w-2xl mx-auto bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-6">
-        <h2 className="text-2xl text-center font-semibold text-gray-800">Quiz Control Panel</h2>
-        <div className="bg-gray-400 w-full h-0.5 my-3"></div>
+        <h2 className="text-2xl font-semibold mb-6 text-gray-800">Latest Quiz Control</h2>
         
         {isLoading ? (
           <div className="flex justify-center items-center py-8">

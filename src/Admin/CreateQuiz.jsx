@@ -11,7 +11,6 @@ import {
   faImage,
   faTimes,
   faClock,
-  faCalendar,
   faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import mesh from "/graphics/mesh.svg";
@@ -22,7 +21,6 @@ const createAPI = "https://ccc-quiz.onrender.com/admin/CreateQuiz";
 const CreateQuiz = () => {
   const navigate = useNavigate();
   const [quizTitle, setQuizTitle] = useState("");
-  const [quizDescription, setQuizDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [timeLimit, setTimeLimit] = useState(30); // Default 30 seconds per question
@@ -90,13 +88,14 @@ const CreateQuiz = () => {
 
     // Format quiz data according to the required structure
     const quizData = {
-      quizId: `quiz${Date.now()}`, // Generate a unique quiz ID
-      email: "saurabhsri.mau@gmail.com", // You might want to get this from your auth context
+      quizId: `quiz${Date.now()}`,
+      email: "saurabhsri.mau@gmail.com",
       quizTitle,
       status: false,
-      players: null,
+      startQuiz: startDate,
+      endQuiz: endDate,
       questions: questions.map((q, index) => ({
-        quesKey: `q${Date.now()}${index}`, // Generate a unique question key
+        quesKey: `q${index}`,
         questionText: q.question,
         options: q.options,
         correctAnswer: q.correctAnswer === null ? null : q.options[q.correctAnswer], // Send the actual answer text
@@ -110,6 +109,8 @@ const CreateQuiz = () => {
 
       if (response.status === 201) {
         console.log("Quiz created successfully!");
+        console.log(response.data);
+        console.log("Quiz data:", quizData);
         navigate("/admin/dashboard");
       } else {
         console.error("Failed to create quiz:", response.data);

@@ -12,6 +12,7 @@ import ProtectedRoute from "./Security/ProtectedRoute";
 import { AdminProvider } from "./Security/AdminContext";
 import CreateQuiz from "./Admin/CreateQuiz";
 import Analytics from "./Admin/Analytics";
+import Result from "./Pages/Result";
 
 const App = () => {
   return (
@@ -45,6 +46,7 @@ const App = () => {
             {/* <Route path="/room" element={<QuizRoom />} /> */}
             <Route path="/room/:roomId/:player" element={<QuizRoom />} />
             <Route path="/quiz/:roomCode" element={<QuizPage />} />
+            <Route path="/results" element={<Result />} />
           </Routes>
         </Router>
       </WebData>

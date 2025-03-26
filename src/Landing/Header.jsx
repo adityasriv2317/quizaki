@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useWebData } from "../Security/WebData";
-import Carousel from "./Carousel";
-import Events from "./Events";
-import About from "./About";
 
 const GoToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -189,6 +186,12 @@ const Header = () => {
       ) : (
         <div className="hidden md:block right space-x-6 [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">
           <Link
+            to="/auth/login"
+            className=" hover:bg-white hover:text-[rgb(185,68,89)] border border-white [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] font-semibold rounded-lg px-6 py-3 transition-colors"
+          >
+            Login
+          </Link>
+          <Link
             to="/auth/register"
             className="bg-[rgb(245,245,245)] hover:bg-white text-[rgb(185,68,89)] [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] font-semibold rounded-lg p-3"
           >
@@ -299,13 +302,22 @@ const Header = () => {
             </>
           ) : (
             <div className="space-x-6">
-              <Link
-                to="/auth/register"
-                className="text-[rgb(185,68,89)] [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] bg-white font-semibold rounded-lg px-4 py-2"
-                onClick={closeMenu}
-              >
-                Get Started
-              </Link>
+              <>
+                <Link
+                  to="/auth/login"
+                  className="text-[rgb(185,68,89)] [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] bg-white font-semibold rounded-lg px-6 py-2"
+                  onClick={closeMenu}
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/auth/register"
+                  className="text-[rgb(185,68,89)] [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] bg-white font-semibold rounded-lg px-4 py-2"
+                  onClick={closeMenu}
+                >
+                  Get Started
+                </Link>
+              </>
             </div>
           )}
         </div>

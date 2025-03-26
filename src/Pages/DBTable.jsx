@@ -118,7 +118,7 @@ const DBTable = ({ onQuizSelect }) => {  // Add this prop
                 Quiz Title
               </th>
               <th className="px-4 sm:px-6 py-3 sm:py-4 border-b border-r border-gray-200 text-left text-gray-800 text-sm sm:text-base">
-                Questions
+                Ques
               </th>
               <th className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 text-left text-gray-800 text-sm sm:text-base">
                 Status

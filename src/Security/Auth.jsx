@@ -7,6 +7,7 @@ import Footer from "../Landing/Footer";
 import ReCAPTCHA from "react-google-recaptcha";
 import mesh from "/graphics/mesh.svg";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import { useWebData } from "./WebData";
 
@@ -50,6 +51,9 @@ const Auth = () => {
 
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+
+  const navigate = useNavigate();
+  const { userLogin } = useWebData();
 
   function onChange(value) {
     console.log("Captcha value:", value);
@@ -114,7 +118,7 @@ const Auth = () => {
     }
   };
 
-  const verifyOtp = (e) => {
+  const verifyOtp = async (e) => {
     e.preventDefault();
 
     if (!userOtp) {
@@ -123,15 +127,15 @@ const Auth = () => {
       return;
     }
 
-    const otpApi = "myhost.in/api.otpverify";
-
-    const otpData = {
-      otp: userOtp,
-    };
+    const otpAPI = `https://ccc-quiz.onrender.com/player/verifyOtp?email=${email}&otp=${userOtp}`;
 
     try {
-      const res = axios.post(otpApi, otpData);
+      const res = await axios.post(otpAPI);
       console.log("OTP verified:", res);
+      setMessageType("success");
+      setMessage("OTP verified successfully. You can now login.");
+      userLogin(playerName, email);
+      navigate("/");
     } catch (error) {
       console.log("Error in OTP verification", error);
       setMessageType("error");
@@ -139,7 +143,6 @@ const Auth = () => {
       console.error(error);
     } finally {
       setOtpLoader(false);
-      userLogin(playerName);
     }
   };
 
@@ -155,7 +158,7 @@ const Auth = () => {
           <span className="font-oxanium text-2xl md:text-2xl">QUIZAKI</span>
           <Link
             to="/"
-            className="font-poppins font-semibold text-sm md:text-base z-50 md:bg-[rgb(245,245,245)] bg-white hover:bg-white text-mag p-2 rounded-lg shadow-md [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)]"
+            className="font-poppins font-semibold text-sm md:text-base z-50 md:bg-[rgb(245,245,245)] bg-white hover:bg-white text-mag py-3 px-6 rounded-lg shadow-md [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)]"
           >
             Home
           </Link>
@@ -292,7 +295,7 @@ const Auth = () => {
             otpOverlay ? "flex absolute" : "hidden"
           } font-oxanium z-20 absolute top-0 left-0 w-full h-full bg-black bg-opacity-45`}
         >
-          <div className="mx-auto h-1/2 py-6 px-6 shadow-lg bg-gradient-to-b from-[rgb(183,67,88)] to-[rgb(129,41,57)] border rounded-lg w-full md:w-2/5 lg:w-1/3 border-white justify-center items-center mt-8 text-sm md:text-base ">
+          <div className="mx-auto absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-1/2 py-6 px-6 shadow-lg bg-gradient-to-b from-[rgb(183,67,88)] to-[rgb(129,41,57)] border rounded-lg w-full md:w-2/5 lg:w-1/3 border-white justify-center items-center mt-8 text-sm md:text-base ">
             <button
               onClick={() => setOtpOverlay(false)}
               className="relative font-mono text-white text-lg"
