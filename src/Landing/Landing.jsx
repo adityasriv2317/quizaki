@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
-// import hero from "/imgs/hero.svg";
 import hero from "/imgs/hero1.svg";
-import Carousel from "./Carousel";
-import ThreeDModel from "../Model/ThreeDModel";
 
-import { useWebData, WebData } from "../Security/WebData";
+import { useWebData} from "../Security/WebData";
 import { useNavigate } from "react-router-dom";
 
 const Landing = () => {
@@ -139,7 +136,7 @@ const Landing = () => {
                 />
                 <button
                   type="submit"
-                  className="bg-mag hover:bg-[rgb(209,71,94)] cursor-pointer font-oxanium border [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-4 py-2 rounded-md shadow-xl mt-2"
+                  className="bg-mag hover:bg-[rgb(209,71,94)] cursor-pointer mt-6 font-oxanium border [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-4 py-2 rounded-md shadow-xl"
                 >
                   Join
                 </button>
@@ -154,7 +151,7 @@ const Landing = () => {
                 onClick={() => {
                   navigate("/auth/register");
                 }}
-                className="bg-mag hover:bg-[rgb(209,71,94)] bt-5 font-oxanium border [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-4 py-2 rounded-md shadow-xl cursor-pointer"
+                className="bg-mag hover:bg-[rgb(209,71,94)] bt-5 font-oxanium border [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-6 py-3 rounded-md shadow-xl cursor-pointer"
               >
                 Register &gt;&gt;
               </span>

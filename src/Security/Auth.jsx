@@ -107,8 +107,10 @@ const Auth = () => {
     }
 
     try {
-      setLoginLoader(true);
-      setOtpOverlay(true);
+      setInterval(() => {
+        setLoginLoader(true);
+        setOtpOverlay(true);
+      }, 5000);
     } catch (error) {
       console.error("Error in login", error);
       setMessage("Login failed. Please check your email and try again.");

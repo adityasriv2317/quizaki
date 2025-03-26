@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useWebData } from "../Security/WebData";
-import { io } from "socket.io-client";
-
-const socket = io("http://localhost:5000");
 
 const QuizRoom = () => {
-  const { roomCode } = useParams();
   const { siteData } = useWebData();
   const navigate = useNavigate();
 
   const [countdown, setCountdown] = useState(30);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const roomCode = siteData.code;
 
   useEffect(() => {
     // Update date every second
@@ -24,16 +21,9 @@ const QuizRoom = () => {
       setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
-    // Listen for quiz start event from the admin
-    socket.on("startQuiz", () => {
-      // Redirect to quiz page
-      navigate(`/quiz/${roomCode}`);
-    });
-
     return () => {
       clearInterval(dateInterval);
       clearInterval(countdownInterval);
-      socket.off("startQuiz");
     };
   }, [roomCode, navigate]);
 
