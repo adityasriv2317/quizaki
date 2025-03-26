@@ -1,14 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
 
-const CountdownTimer = ({ duration, onTimeUp }) => {
-  const [timeLeft, setTimeLeft] = useState(duration);
+const CountdownTimer = ({ duration, onTimeUp, currentTime }) => {
+  const [timeLeft, setTimeLeft] = useState(currentTime);
   const startTimeRef = useRef(Date.now());
   const frameRef = useRef(null);
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
-    const endTime = startTimeRef.current + duration * 1000;
+    // Reset start time when currentTime changes
+    startTimeRef.current = Date.now();
+    setTimeLeft(currentTime);
+  }, [currentTime]);
+
+  useEffect(() => {
+    const endTime = startTimeRef.current + currentTime * 1000;
 
     const animate = () => {
       const now = Date.now();
@@ -17,6 +23,7 @@ const CountdownTimer = ({ duration, onTimeUp }) => {
       if (remaining <= 0) {
         setTimeLeft(0);
         onTimeUp();
+        cancelAnimationFrame(frameRef.current);
         return;
       }
 
@@ -24,7 +31,6 @@ const CountdownTimer = ({ duration, onTimeUp }) => {
       frameRef.current = requestAnimationFrame(animate);
     };
 
-    // Start animation immediately
     animate();
 
     return () => {
@@ -32,7 +38,7 @@ const CountdownTimer = ({ duration, onTimeUp }) => {
         cancelAnimationFrame(frameRef.current);
       }
     };
-  }, [duration, onTimeUp]);
+  }, [currentTime, onTimeUp]);
 
   const progress = (timeLeft / duration) * circumference;
 

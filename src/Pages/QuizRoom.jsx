@@ -22,16 +22,19 @@ const QuizRoom = () => {
       );
       // find the quiz with the given room code
       const quiz = response.data.find((q) => q.quizId === roomCode);
-      setData(quiz);
-
-      // calculate countdown time
-      if (quiz?.startQuizTime) {
-        const startTime = new Date(quiz.startQuizTime).getTime();
-        const now = new Date().getTime();
-        const timeLeft = Math.max(Math.floor((startTime - now) / 1000), 0);
-
-        setCountdown(timeLeft);
-        countRef.current = timeLeft;
+      if (quiz) {
+        setData(quiz);
+        // calculate countdown time
+        if (quiz.startQuizTime) {
+          const startTime = new Date(quiz.startQuizTime).getTime();
+          const now = new Date().getTime();
+          const timeLeft = Math.max(Math.floor((startTime - now) / 1000), 0);
+          setCountdown(timeLeft);
+          countRef.current = timeLeft;
+        }
+      } else {
+        console.log(`No quiz found for room code: ${roomCode}`);
+        setData([]);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -42,14 +45,6 @@ const QuizRoom = () => {
   }
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!roomCode) return;
-      await getQuizData(roomCode);
-    };
-    fetchData();
-  }, [roomCode]);
-
-  useEffect(() => {
     if (!roomCode) return;
 
     const dateInterval = setInterval(() => {
@@ -58,12 +53,13 @@ const QuizRoom = () => {
 
     const countdownInterval = setInterval(() => {
       setCountdown((prev) => {
-        if (prev > 0) {
+        if (prev && prev > 0) {
           countRef.current = prev - 1;
           return prev - 1;
         } else {
           clearInterval(countdownInterval);
-          if (data?.questions) {
+          // Only navigate if we have valid quiz data
+          if (data && data.questions && data.questions.length > 0) {
             navigate(`/quiz/${roomCode}`, { 
               state: { 
                 quizData: data

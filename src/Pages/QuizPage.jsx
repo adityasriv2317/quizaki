@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate,useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useWebData } from "../Security/WebData";
 import CountdownTimer from "../assets/CountdownTimer";
 import { useMediaQuery } from "react-responsive";
+import { Lock } from "lucide-react";
 
 // Pass props
 const DesktopLayout = ({
@@ -10,9 +11,12 @@ const DesktopLayout = ({
   progress,
   question,
   selectedOption,
+  isAnswerLocked,
   setSelectedOption,
   onTimeUp,
   countdown,
+  score,
+  streak
 }) => {
   return (
     <div className="min-h-screen w-full flex flex-col bg-gradient-to-br from-[#b74358] to-[#812939] text-white p-4">
@@ -35,11 +39,10 @@ const DesktopLayout = ({
             currentTime={countdown}
           />
 
-          {/* Score */}
+          {/* Score Section */}
           <div className="bg-violet-200 font-mono font-light text-lg md:text-2xl px-4 py-2 rounded-md mt-4">
-            <span className="uppercase">
-              score : {siteData?.user?.score || 0}
-            </span>
+            <span className="uppercase">score : {score}</span>
+            <div className="text-sm mt-2">Streak: {streak}</div>
           </div>
 
           {/* User Details */}
@@ -55,8 +58,8 @@ const DesktopLayout = ({
             <>
               {/* Question Text */}
               <div className="shadow-md p-4 bg-red-100 rounded-md mb-4 h-auto md:h-full">
-                <h3 className="text-lg md:text-2xl font-semibold mb-2">
-                  {question.text}
+                <h3 className="text-lg md:text-2xl text-center font-semibold mb-2">
+                  {question.questionText}
                 </h3>
                 {question.image && (
                   <img
@@ -74,16 +77,22 @@ const DesktopLayout = ({
                 </p>
                 <div className="grid grid-cols-1 gap-4 mx-auto max-w-[90%] md:max-w-[90%]">
                   {question.options.map((option, index) => (
+                    // In both DesktopLayout and MobileLayout, update the option button:
                     <button
                       key={index}
-                      className={`p-3 md:p-4 rounded-md shadow-md text-base md:text-lg font-semibold transition-all ${
+                      disabled={isAnswerLocked && selectedOption !== option}
+                      className={`py-3 px-20 md:py-4 rounded-md shadow-md flex flex-row items-center justify-between text-base md:text-lg font-semibold transition-all ${
                         selectedOption === option
-                          ? "bg-red-200 text-black"
+                          ? isAnswerLocked 
+                            ? option === question.correctAnswer 
+                              ? "bg-red-200 text-black"
+                              : "bg-red-200 text-black"
+                            : "bg-red-200 text-black"
                           : "bg-[rgb(244,230,230)]"
-                      }`}
+                      } ${isAnswerLocked && selectedOption !== option ? "opacity-50 cursor-not-allowed" : ""}`}
                       onClick={() => setSelectedOption(option)}
                     >
-                      {option}
+                      {option}{selectedOption === option && <Lock size={20} />} 
                     </button>
                   ))}
                 </div>
@@ -101,6 +110,8 @@ const MobileLayout = ({
   question,
   selectedOption,
   setSelectedOption,
+  isAnswerLocked,
+  onTimeUp,
   countdown,
 }) => {
   return (
@@ -125,7 +136,7 @@ const MobileLayout = ({
         {question && (
           <>
             {/* Question text */}
-            <h3 className="text-lg font-semibold mb-2">{question.text}</h3>
+            <h3 className="text-2xl font-poppins text-center font-semibold mb-2">{question.questionText}</h3>
 
             {/* Display question image if provided */}
             {question.image && (
@@ -167,7 +178,7 @@ const MobileLayout = ({
               >
                 {String.fromCharCode(65 + index)}
               </span>
-              {option}
+              {option}{selectedOption === option && <Lock size={20} className="mx-16" />}
             </button>
           ))}
         </div>
@@ -195,31 +206,80 @@ const QuizPage = () => {
   const [question, setQuestion] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState([]);
+  const [score, setScore] = useState(0);
+  const [isAnswerLocked, setIsAnswerLocked] = useState(false);
   const quizData = location.state?.quizData;
   const isMobile = useMediaQuery({ maxWidth: 900 });
 
-  const handleTimeUp = () => {
-    if (currentQuestionIndex < quizData?.questions?.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-      setSelectedOption(null);
-      setCountdown(30);
-    } else {
-      navigate("/results");
-    }
-  };
-
   useEffect(() => {
-    if (!quizData?.questions) {
-      navigate("/");
+    if (!quizData) {
+      console.log("No quiz data available");
       return;
     }
     
-    setQuestion(quizData.questions[currentQuestionIndex]);
-    setProgress((currentQuestionIndex + 1) / quizData.questions.length * 100);
-  }, [quizData, currentQuestionIndex, navigate]);
+    // Since quizData is an array, get the first quiz object
+    const currentQuiz = Array.isArray(quizData) ? quizData[0] : quizData;
+    
+    if (currentQuiz?.questions) {
+      const currentQuestion = currentQuiz.questions[currentQuestionIndex];
+      setQuestion(currentQuestion);
+      setProgress((currentQuestionIndex + 1) / currentQuiz.questions.length * 100);
+    }
+  }, [quizData, currentQuestionIndex]);
+
+const handleTimeUp = () => {
+  // Since quizData is an array, get the first quiz object
+  const currentQuiz = Array.isArray(quizData) ? quizData[0] : quizData;
+  
+  // Always record an answer, even if no option was selected
+  const isCorrect = selectedOption === question?.correctAnswer;
+  const timeBonus = isCorrect ? Math.floor(countdown / 2) : 0;
+  
+  // Update score if answer was correct
+  if (isCorrect) {
+    setScore(prev => prev + (100 + timeBonus));
+  }
+  
+  // Record the answer attempt
+  setAnswers(prev => [...prev, {
+    quesKey: question?.quesKey || currentQuestionIndex,
+    selectedAnswer: selectedOption || 'No answer',
+    correctAnswer: question?.correctAnswer,
+    isCorrect: isCorrect,
+    timeLeft: countdown,
+    questionScore: isCorrect ? (100 + timeBonus) : 0
+  }]);
+
+  // Check if there are more questions
+  if (currentQuestionIndex < (currentQuiz?.questions?.length - 1)) {
+    // Reset for next question
+    setCurrentQuestionIndex(prev => prev + 1);
+    setSelectedOption(null);
+    setIsAnswerLocked(false);
+    setCountdown(30);
+  } else {
+    // Quiz completed, navigate to results
+    navigate("/results", {
+      state: {
+        answers: [...answers, {
+          quesKey: question?.quesKey || currentQuestionIndex,
+          selectedAnswer: selectedOption || 'No answer',
+          correctAnswer: question?.correctAnswer,
+          isCorrect: isCorrect,
+          timeLeft: countdown,
+          questionScore: isCorrect ? (100 + timeBonus) : 0
+        }],
+        score: isCorrect ? score + (100 + timeBonus) : score,
+        totalQuestions: currentQuiz?.questions?.length || 0,
+        quizTitle: currentQuiz?.quizTitle || 'Quiz'
+      }
+    });
+  }
+};
 
   useEffect(() => {
-    const countdownInterval = setInterval(() => {
+    const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           handleTimeUp();
@@ -229,8 +289,15 @@ const QuizPage = () => {
       });
     }, 1000);
 
-    return () => clearInterval(countdownInterval);
-  }, [currentQuestionIndex, quizData, navigate]);
+    return () => clearInterval(timer);
+  }, [currentQuestionIndex]);
+
+  const handleOptionSelect = (option) => {
+    if (!isAnswerLocked) {
+      setSelectedOption(option);
+      setIsAnswerLocked(true);
+    }
+  };
 
   if (!quizData?.questions) {
     return null;
@@ -240,10 +307,13 @@ const QuizPage = () => {
     siteData,
     progress,
     question,
+    isAnswerLocked,
     selectedOption,
-    setSelectedOption,
+    setSelectedOption: handleOptionSelect,
     countdown,
-    onTimeUp: handleTimeUp
+    onTimeUp: handleTimeUp,
+    score,
+    isAnswerLocked
   };
 
   return isMobile ? (
