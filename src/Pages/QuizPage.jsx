@@ -217,6 +217,7 @@ const MobLayout = ({
   selectedOption,
   setSelectedOption,
   isAnswerLocked,
+  setIsAnswerLocked,
   onTimeUp,
   countdown,
   score,
@@ -225,10 +226,10 @@ const MobLayout = ({
 
   useEffect(() => {
     setInterval(() => {
-      let q = quesNo
-      setQuesNo(q+1)
-    }, 30000)
-  },[])
+      let q = quesNo;
+      setQuesNo(q + 1);
+    }, 30000);
+  }, []);
 
   return (
     // Main container with full height and gray background
@@ -294,7 +295,12 @@ const MobLayout = ({
                   ? "bg-gray-50 text-black border-red-400" // Highlight selected option
                   : "bg-gray-100 border-gray-200" // Default option style
               }`}
-              onClick={() => setSelectedOption(option)}
+              onClick={() => {
+                if (!isAnswerLocked) {
+                  setSelectedOption(option);
+                  setIsAnswerLocked(true);
+                }
+              }}
             >
               {/* Display option letter (A, B, C, D) */}
               <span
@@ -365,13 +371,24 @@ const QuizPage = () => {
     // Since quizData is an array, get the first quiz object
     const currentQuiz = Array.isArray(quizData) ? quizData[0] : quizData;
 
-    // Always record an answer, even if no option was selected
+    // record answer
     const isCorrect = selectedOption === question?.correctAnswer;
     const timeBonus = isCorrect ? Math.floor(countdown / 2) : 0;
 
     // Update score if answer was correct
     if (isCorrect) {
-      setScore((prev) => prev + (100 + timeBonus));
+      setScore((prevScore) => prevScore + (100 + timeBonus));
+      console.log("Correct answer!");
+      console.log("selectedOption:", selectedOption);
+      console.log("question?.correctAnswer:", question?.correctAnswer);
+      console.log("timeBonus:", timeBonus);
+      console.log("score:", score);
+    } else {
+      console.log("Incorrect answer!");
+      console.log("selectedOption:", selectedOption);
+      console.log("question?.correctAnswer:", question?.correctAnswer);
+      console.log("timeBonus:", timeBonus);
+      console.log("score:", score);
     }
 
     // Record the answer attempt
@@ -450,6 +467,7 @@ const QuizPage = () => {
     selectedOption,
     setSelectedOption: handleOptionSelect,
     countdown,
+    setIsAnswerLocked,
     onTimeUp: handleTimeUp,
     score,
     isAnswerLocked,
