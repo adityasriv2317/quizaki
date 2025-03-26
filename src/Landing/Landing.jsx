@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import hero from "/imgs/hero.svg";
+// import hero from "/imgs/hero.svg";
+import hero from "/imgs/hero1.svg";
 import Carousel from "./Carousel";
 import ThreeDModel from "../Model/ThreeDModel";
 
@@ -59,7 +60,7 @@ const Landing = () => {
         <p className="font-semibold text-3xl md:text-6xl [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)] mt-4 leading-tight">
           The Ultimate Brain Training Platform
         </p>
-        <p className="text-md mt-6 md:mt-10 [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">
+        <p className="bg-custom text-md mt-6 md:mt-10 [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">
           Loop is where stories unfold, connections are made, and memories are
           shared. Whether you're a storyteller, a listener, or somewhere in
           between, there's a place for you in our community.
@@ -88,7 +89,7 @@ const Landing = () => {
       </div>
 
       {/* Right  */}
-      <div className="md:w-1/3 mt-8 md:mt-0">
+      <div className="md:w-1/3 my-4 md:mt-0">
         <img src={hero} alt="Hero" />
       </div>
 

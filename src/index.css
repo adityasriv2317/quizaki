@@ -9,3 +9,11 @@ html {
 * {
   transition: smooth ease-in-out 200ms;
 }
+
+@media (min-width: 900px) and (max-width: 1000px) {
+  .bg-custom {
+    background-color: #a3415b97;
+    padding: 10px;
+    border-radius: 10px;
+  }
+}
