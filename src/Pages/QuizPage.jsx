@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 import { useWebData } from "../Security/WebData";
-import { io } from "socket.io-client";
 import CountdownTimer from "../assets/CountdownTimer";
 import { useMediaQuery } from "react-responsive";
-
-const socket = io("http://localhost:5000");
 
 // Pass props
 const DesktopLayout = ({
@@ -190,6 +187,7 @@ const MobileLayout = ({
 };
 
 const QuizPage = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { siteData } = useWebData();
   const [countdown, setCountdown] = useState(30);
@@ -197,17 +195,30 @@ const QuizPage = () => {
   const [question, setQuestion] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const totalQuestions = 10;
-
+  const quizData = location.state?.quizData;
   const isMobile = useMediaQuery({ maxWidth: 900 });
 
-  useEffect(() => {
-    // Join quiz room when component mounts
-    socket.emit('joinQuiz', {
-      roomCode: siteData?.code,
-      userId: siteData?.user
-    });
+  const handleTimeUp = () => {
+    if (currentQuestionIndex < quizData?.questions?.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+      setSelectedOption(null);
+      setCountdown(30);
+    } else {
+      navigate("/results");
+    }
+  };
 
+  useEffect(() => {
+    if (!quizData?.questions) {
+      navigate("/");
+      return;
+    }
+    
+    setQuestion(quizData.questions[currentQuestionIndex]);
+    setProgress((currentQuestionIndex + 1) / quizData.questions.length * 100);
+  }, [quizData, currentQuestionIndex, navigate]);
+
+  useEffect(() => {
     const countdownInterval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -218,56 +229,13 @@ const QuizPage = () => {
       });
     }, 1000);
 
-    // Listen for new questions
-    socket.on("newQuestion", (data) => {
-      console.log("Received question:", data);
-      setQuestion({
-        text: data.text,
-        options: data.options,
-        image: data.image || null
-      });
-      setSelectedOption(null);
-      setCountdown(30);
-      setCurrentQuestionIndex(data.index || currentQuestionIndex + 1);
-      setProgress(((currentQuestionIndex + 1) / totalQuestions) * 100);
-    });
+    return () => clearInterval(countdownInterval);
+  }, [currentQuestionIndex, quizData, navigate]);
 
-    // Request first question
-    socket.emit('requestNextQuestion', {
-      roomCode: siteData?.code,
-      currentIndex: -1
-    });
+  if (!quizData?.questions) {
+    return null;
+  }
 
-    socket.on("endQuiz", () => {
-      navigate("/results");
-    });
-
-    return () => {
-      clearInterval(countdownInterval);
-      socket.off("newQuestion");
-      socket.off("endQuiz");
-      socket.emit('leaveQuiz', {
-        roomCode: siteData?.code,
-        userId: siteData?.user
-      });
-    };
-  }, [navigate, siteData, currentQuestionIndex]);
-
-  const handleTimeUp = () => {
-    socket.emit('submitAnswer', {
-      roomCode: siteData?.code,
-      answer: selectedOption || '',
-      questionIndex: currentQuestionIndex
-    });
-
-    // Request next question
-    socket.emit('requestNextQuestion', {
-      roomCode: siteData?.code,
-      currentIndex: currentQuestionIndex
-    });
-  };
-
-  // Update layout props
   const layoutProps = {
     siteData,
     progress,

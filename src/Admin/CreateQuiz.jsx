@@ -92,7 +92,7 @@ const CreateQuiz = () => {
       email: "saurabhsri.mau@gmail.com",
       quizTitle,
       status: false,
-      startQuiz: startDate,
+      startQuizTime: startDate,
       endQuiz: endDate,
       questions: questions.map((q, index) => ({
         quesKey: `q${index}`,
