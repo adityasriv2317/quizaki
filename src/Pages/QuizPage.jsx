@@ -5,6 +5,7 @@ import CountdownTimer from "../assets/CountdownTimer";
 import { useMediaQuery } from "react-responsive";
 import { Lock } from "lucide-react";
 import { use } from "react";
+import { useQuiz } from '../Context/QuizContext';
 
 // Pass props
 const DesktopLayout = ({
@@ -111,106 +112,6 @@ const DesktopLayout = ({
   );
 };
 
-const MobileLayout = ({
-  progress,
-  question,
-  selectedOption,
-  setSelectedOption,
-  isAnswerLocked,
-  onTimeUp,
-  countdown,
-  score,
-}) => {
-  return (
-    <div className="min-h-screen w-full bg-gray-300 flex flex-col">
-      {/* Header Section */}
-      <div className="p-4 bg-[rgb(185,68,89)] text-white shadow-md">
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-semibold mt-4">
-            Question {Math.floor(progress / 10)}
-          </h3>
-          <div className="text-lg font-semibold">Score: {score}</div>
-        </div>
-        {/* Progress bar */}
-        <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden mt-2">
-          <div
-            className="h-full bg-red-400 rounded-md transition-all ease-out"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-      </div>
-
-      {/* Timer */}
-      <div className="flex justify-center my-4">
-        <CountdownTimer
-          duration={30}
-          onTimeUp={onTimeUp}
-          currentTime={countdown}
-        />
-      </div>
-
-      {/* Question Content */}
-      <div className="flex-grow flex flex-col p-4">
-        {question && (
-          <div className="shadow-md p-4 bg-red-100 rounded-md mb-4">
-            <h3 className="text-xl font-poppins text-center font-semibold mb-4">
-              {question.questionText}
-            </h3>
-            {question.image && (
-              <img
-                src={question.image}
-                alt="Question"
-                className="w-full rounded-md mb-4"
-              />
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Options Section */}
-      <div className="bg-white py-6 px-6 rounded-t-[50px] shadow-md">
-        <p className="text-xl font-poppins font-bold text-center mb-8 text-gray-800">
-          Select the Correct Option
-        </p>
-        <div className="grid grid-cols-1 gap-6">
-          {question?.options.map((option, index) => (
-            <button
-              key={index}
-              disabled={isAnswerLocked && selectedOption !== option}
-              className={`flex items-center justify-between p-3 border rounded-full text-xl font-bold transition-all ${
-                selectedOption === option
-                  ? isAnswerLocked
-                    ? option === question.correctAnswer
-                      ? "bg-green-200 text-black border-green-400"
-                      : "bg-red-200 text-black border-red-400"
-                    : "bg-gray-50 text-black border-red-400"
-                  : "bg-gray-100 border-gray-200"
-              } ${
-                isAnswerLocked && selectedOption !== option
-                  ? "opacity-50 cursor-not-allowed"
-                  : ""
-              }`}
-              onClick={() => setSelectedOption(option)}
-            >
-              <span
-                className={`mr-5 font-semibold text-lg text-center rounded-full px-3 py-1 ${
-                  selectedOption === option
-                    ? "bg-red-400 text-white"
-                    : "bg-white shadow-sm text-gray-800"
-                }`}
-              >
-                {String.fromCharCode(65 + index)}
-              </span>
-              <span className="flex-grow text-left pl-4">{option}</span>
-              {selectedOption === option && <Lock size={20} />}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const MobLayout = ({
   progress,
   question,
@@ -221,23 +122,14 @@ const MobLayout = ({
   onTimeUp,
   countdown,
   score,
+  currentQuestionIndex, // Add this prop
 }) => {
-  const [quesNo, setQuesNo] = useState(1);
-
-  useEffect(() => {
-    setInterval(() => {
-      let q = quesNo;
-      setQuesNo(q + 1);
-    }, 30000);
-  }, []);
-
+  // Remove the quesNo state and useEffect
   return (
-    // Main container with full height and gray background
     <div className="min-h-screen w-full bg-gray-300 flex flex-col">
-      {/* Header Section: Displays current question number and progress bar */}
       <div className="p-4 bg-[rgb(185,68,89)] text-white shadow-md">
         <h3 className="text-lg flex flex-row justify-between w-full font-semibold text-left mt-4">
-          <span>Question : {quesNo}</span>
+          <span>Question : {currentQuestionIndex + 1}</span>
           <span>Score: {score}</span>
         </h3>
         {/* Progress bar for question navigation */}
@@ -295,11 +187,8 @@ const MobLayout = ({
                   ? "bg-gray-50 text-black border-red-400" // Highlight selected option
                   : "bg-gray-100 border-gray-200" // Default option style
               }`}
-              onClick={() => {
-                if (!isAnswerLocked) {
-                  setSelectedOption(option);
-                  setIsAnswerLocked(true);
-                }
+              onClick={(index) => {
+                setSelectedOption(option, index);
               }}
             >
               {/* Display option letter (A, B, C, D) */}
@@ -334,10 +223,74 @@ const MobLayout = ({
   );
 };
 
+// Add this new component at the top with other layout components
+const ResultLayout = ({ quizStats, onHomeClick }) => {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#b74358] to-[#812939] p-4">
+      <div className="w-full max-w-4xl mx-auto px-4">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-oxanium font-bold text-white mb-2">Quiz Complete!</h1>
+        </div>
+
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+            {/* Score Card */}
+            <div className="bg-gradient-to-r from-[#b74358] to-[#812939] rounded-xl p-6 text-white">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-oxanium">Total Score</span>
+                <span className="text-2xl">🏆</span>
+              </div>
+              <div className="text-4xl font-bold mt-2 font-poppins">{quizStats.totalScore}</div>
+              <div className="text-sm mt-2 font-oxanium">Time Bonus: +{quizStats.timeBonus}</div>
+            </div>
+
+            {/* Correct Answers Card */}
+            <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-oxanium">Correct Answers</span>
+                <span className="text-2xl">✓</span>
+              </div>
+              <div className="text-4xl font-bold font-poppins mt-2">
+                {quizStats.correctAnswers}/{quizStats.totalQuestions}
+              </div>
+            </div>
+          </div>
+
+          {/* Detailed Stats */}
+          <div className="bg-gray-50 rounded-xl p-6 mb-8">
+            <h3 className="text-xl font-semibold font-oxanium text-gray-800 mb-4">Quiz Statistics</h3>
+            <div className="grid grid-cols-1 font-poppins sm:grid-cols-2 gap-4">
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
+                <span className="text-gray-600">Accuracy Rate</span>
+                <span className="font-semibold">{quizStats.accuracy}%</span>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
+                <span className="text-gray-600">Average Time</span>
+                <span className="font-semibold">{quizStats.averageTime}s</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={onHomeClick}
+              className="flex-1 px-6 py-3 bg-[#b74358] text-white rounded-xl hover:bg-[#812939] transition-all duration-300 shadow-lg"
+            >
+              Return Home
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const QuizPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { siteData } = useWebData();
+  const { updateQuizState, addAnswer } = useQuiz();
   const [countdown, setCountdown] = useState(30);
   const [progress, setProgress] = useState(0);
   const [question, setQuestion] = useState(null);
@@ -345,6 +298,10 @@ const QuizPage = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [score, setScore] = useState(0);
+  const [Final, setFinal] = useState(false);
+  const [streak, setStreak] = useState(0);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
   const [isAnswerLocked, setIsAnswerLocked] = useState(false);
   const quizData = location.state?.quizData;
   const isMobile = useMediaQuery({ maxWidth: 900 });
@@ -355,7 +312,6 @@ const QuizPage = () => {
       return;
     }
 
-    // Since quizData is an array, get the first quiz object
     const currentQuiz = Array.isArray(quizData) ? quizData[0] : quizData;
 
     if (currentQuiz?.questions) {
@@ -366,73 +322,6 @@ const QuizPage = () => {
       );
     }
   }, [quizData, currentQuestionIndex]);
-
-  const handleTimeUp = () => {
-    // Since quizData is an array, get the first quiz object
-    const currentQuiz = Array.isArray(quizData) ? quizData[0] : quizData;
-
-    // record answer
-    const isCorrect = selectedOption === question?.correctAnswer;
-    const timeBonus = isCorrect ? Math.floor(countdown / 2) : 0;
-
-    // Update score if answer was correct
-    if (isCorrect) {
-      setScore((prevScore) => prevScore + (100 + timeBonus));
-      console.log("Correct answer!");
-      console.log("selectedOption:", selectedOption);
-      console.log("question?.correctAnswer:", question?.correctAnswer);
-      console.log("timeBonus:", timeBonus);
-      console.log("score:", score);
-    } else {
-      console.log("Incorrect answer!");
-      console.log("selectedOption:", selectedOption);
-      console.log("question?.correctAnswer:", question?.correctAnswer);
-      console.log("timeBonus:", timeBonus);
-      console.log("score:", score);
-    }
-
-    // Record the answer attempt
-    setAnswers((prev) => [
-      ...prev,
-      {
-        quesKey: question?.quesKey || currentQuestionIndex,
-        selectedAnswer: selectedOption || "No answer",
-        correctAnswer: question?.correctAnswer,
-        isCorrect: isCorrect,
-        timeLeft: countdown,
-        questionScore: isCorrect ? 100 + timeBonus : 0,
-      },
-    ]);
-
-    // Check if there are more questions
-    if (currentQuestionIndex < currentQuiz?.questions?.length - 1) {
-      // Reset for next question
-      setCurrentQuestionIndex((prev) => prev + 1);
-      setSelectedOption(null);
-      setIsAnswerLocked(false);
-      setCountdown(30);
-    } else {
-      // Quiz completed, navigate to results
-      navigate("/results", {
-        state: {
-          answers: [
-            ...answers,
-            {
-              quesKey: question?.quesKey || currentQuestionIndex,
-              selectedAnswer: selectedOption || "No answer",
-              correctAnswer: question?.correctAnswer,
-              isCorrect: isCorrect,
-              timeLeft: countdown,
-              questionScore: isCorrect ? 100 + timeBonus : 0,
-            },
-          ],
-          score: isCorrect ? score + (100 + timeBonus) : score,
-          totalQuestions: currentQuiz?.questions?.length || 0,
-          quizTitle: currentQuiz?.quizTitle || "Quiz",
-        },
-      });
-    }
-  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -448,17 +337,97 @@ const QuizPage = () => {
     return () => clearInterval(timer);
   }, [currentQuestionIndex]);
 
+  // Add new state variables for accurate statistics
+  const [displayScore, setDisplayScore] = useState(0);
+  const [actualScore, setActualScore] = useState(0);
+  const [timeBonusTotal, setTimeBonusTotal] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [timeSpent, setTimeSpent] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+  const [quizStats, setQuizStats] = useState({
+    totalScore: 0,
+    timeBonus: 0,
+    correctAnswers: 0,
+    totalQuestions: 0,
+    accuracy: 0,
+    averageTime: 0
+  });
+
   const handleOptionSelect = (option) => {
     if (!isAnswerLocked) {
       setSelectedOption(option);
       setIsAnswerLocked(true);
+
+      const isCorrect = option === question?.correctAnswer;
+      const timeBonus = isCorrect ? Math.floor(countdown / 2) : 0;
+      const pointsEarned = isCorrect ? 100 + timeBonus : 0;
+
+      // Update statistics immediately
+      setActualScore(prev => prev + pointsEarned);
+      setTimeBonusTotal(prev => prev + timeBonus);
+      if (isCorrect) setCorrectCount(prev => prev + 1);
+      setTimeSpent(prev => [...prev, 30 - countdown]);
+
+      // Update display score with delay
+      setTimeout(() => {
+        setDisplayScore(prev => prev + pointsEarned);
+      }, countdown * 1000);
+
+      const newAnswer = {
+        quesKey: question?.quesKey || currentQuestionIndex,
+        selectedAnswer: option,
+        correctAnswer: question?.correctAnswer,
+        isCorrect: isCorrect,
+        timeLeft: countdown,
+        questionScore: pointsEarned,
+        timeBonus: timeBonus
+      };
+      
+      setAnswers(prev => [...prev, newAnswer]);
     }
   };
 
-  if (!quizData?.questions) {
-    return null;
+  const handleTimeUp = () => {
+    const currentQuiz = Array.isArray(quizData) ? quizData[0] : quizData;
+
+    if (!selectedOption) {
+      setTimeSpent(prev => [...prev, 30]);
+    }
+
+    if (currentQuestionIndex < currentQuiz?.questions?.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestionIndex(prev => prev + 1);
+        setSelectedOption(null);
+        setIsAnswerLocked(false);
+        setCountdown(30);
+      }, 500);
+    } else {
+      const totalQuestions = currentQuiz.questions.length;
+      
+      const finalStats = {
+        totalScore: actualScore,
+        timeBonus: timeBonusTotal,
+        correctAnswers: correctCount,
+        totalQuestions: totalQuestions,
+        accuracy: Math.round((correctCount / totalQuestions) * 100),
+        averageTime: Math.round(timeSpent.reduce((total, time) => total + time, 0) / totalQuestions)
+      };
+
+      setQuizStats(finalStats);
+      setShowResults(true);
+    }
+  };
+
+  const handleHomeClick = () => {
+    navigate('/');
+  };
+
+  // Add this check before the layout rendering
+  if (showResults) {
+    return <ResultLayout quizStats={quizStats} onHomeClick={handleHomeClick} />;
   }
 
+  // Update layoutProps
   const layoutProps = {
     siteData,
     progress,
@@ -469,8 +438,8 @@ const QuizPage = () => {
     countdown,
     setIsAnswerLocked,
     onTimeUp: handleTimeUp,
-    score,
-    isAnswerLocked,
+    score: displayScore,
+    currentQuestionIndex,
   };
 
   return isMobile ? (
