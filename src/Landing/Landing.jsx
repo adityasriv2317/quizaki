@@ -51,10 +51,10 @@ const Landing = () => {
     <div className="flex flex-col md:flex-row text-white md:justify-between w-full md:mt-24 mt-6 h-screen">
       {/* Left  */}
       <div className="flex flex-col md:w-1/2 mt-4 items-start mb-8">
-        <p className="font-semibold text-lg md:text-xl [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">
+        <p className="font-semibold text-[rgb(255,201,40)] text-lg md:text-xl [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">
           PLAY AND IMPROVE
         </p>
-        <p className="font-semibold text-3xl md:text-6xl [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)] mt-4 leading-tight">
+        <p className="font-semibold text-3xl md:text-[3.5vw] [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)] mt-4 leading-tight">
           The Ultimate Brain Training Platform
         </p>
         <p className="bg-custom text-md mt-6 md:mt-10 [text-shadow:3px_3px_12px_rgba(0,0,0,0.5)]">
@@ -67,7 +67,7 @@ const Landing = () => {
         <div className="flex flex-wrap space-x-3 mt-6">
           <button
             onClick={() => setCta(true)}
-            className="bg-mag hover:bg-[rgb(209,71,94)] border border-red-800 [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-4 py-2 rounded-md shadow-xl"
+            className="bg-mag hover:bg-[rgb(209,71,94)] border-2 border-red-800 transition-colors [text-shadow:3px_3px_12px_rgba(0,0,0,0.4)] px-4 py-2 rounded-md shadow-xl"
           >
             Play Now
           </button>
@@ -78,7 +78,7 @@ const Landing = () => {
                 element.scrollIntoView({ behavior: "smooth" });
               }
             }}
-            className="bg-[rgb(245,245,245)] hover:bg-white text-mag px-4 [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] py-2 rounded-md shadow-xl border border-mag"
+            className="bg-[rgb(245,245,245)] transition-colors hover:bg-white text-mag px-4 [text-shadow:3px_3px_12px_rgba(233,74,102,0.4)] py-2 rounded-md shadow-xl border border-mag"
           >
             Learn More
           </button>
