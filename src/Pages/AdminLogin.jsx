@@ -69,7 +69,7 @@ const AdminLogin = () => {
       setLoginLoader(true);
       // For demo purposes using hardcoded credentials
       // In production, this should be an API call
-      if (email === 'test@example.com' && password === 'password') {
+      if (email === 'admin@ccc.akgec.live' && password === 'password') {
         await login(email);
         setMessageType("success");
         setMessage("Login successful!");

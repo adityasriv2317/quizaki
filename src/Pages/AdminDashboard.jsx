@@ -9,6 +9,7 @@ import {
   faBars,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
+import { CirclePlus } from "lucide-react";
 import DBTable from "./DBTable";
 import Analytics from "../Admin/Analytics";
 import { Link, useNavigate } from "react-router-dom";
@@ -49,7 +50,10 @@ const AdminDashboard = () => {
           <img src={graphic} alt="Graphic" className="w-full lg:w-auto" />
         </div>
 
-        <Link to="/admin/create" className="hidden md:block w-full lg:w-1/4 p-6">
+        <Link
+          to="/admin/create"
+          className="hidden md:block w-full lg:w-1/4 p-6"
+        >
           <img src={create} alt="Create" className="shadow-xl cursor-pointer" />
         </Link>
       </div>
@@ -105,13 +109,6 @@ const AdminDashboard = () => {
                 {item}
               </p>
             ))}
-            <Link
-              to="/admin/create"
-              className="py-1 block md:hidden cursor-pointer rounded-md text-xl hover:bg-[rgba(255,255,255,0.2)]"
-              onClick={() => setMenuOpen(false)}
-            >
-              CREATE QUIZ
-            </Link>
           </div>
         </div>
 
@@ -140,7 +137,14 @@ const AdminDashboard = () => {
             </div>
 
             {/* Admin Dropdown */}
-            <div className="relative">
+            <div className="relative flex flex-row gap-4">
+              <Link
+                to="/admin/create"
+                className="p-1 text-gray-600 h-full block md:hidden hover:bg-slate-400 my-auto cursor-pointer rounded-md text-xl hover:bg-[rgba(255,255,255,0.2)]"
+                onClick={() => setMenuOpen(false)}
+              >
+                <CirclePlus />
+              </Link>
               <div
                 className="flex items-center hover:bg-[rgba(0,0,0,0.1)] cursor-pointer p-2 rounded-r-lg"
                 onClick={() => setShowDropdown(!showDropdown)}

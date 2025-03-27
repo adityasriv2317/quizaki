@@ -98,10 +98,11 @@ const CreateQuiz = () => {
         quesKey: `q${index}`,
         questionText: q.question,
         options: q.options,
-        correctAnswer: q.correctAnswer === null ? null : q.options[q.correctAnswer], // Send the actual answer text
+        correctAnswer:
+          q.correctAnswer === null ? null : q.options[q.correctAnswer], // Send the actual answer text
         category: q.category,
-        difficulty: q.difficulty
-      }))
+        difficulty: q.difficulty,
+      })),
     };
 
     try {
@@ -116,7 +117,10 @@ const CreateQuiz = () => {
         console.error("Failed to create quiz:", response.data);
       }
     } catch (error) {
-      console.error("Error creating quiz:", error.response?.data || error.message);
+      console.error(
+        "Error creating quiz:",
+        error.response?.data || error.message
+      );
     } finally {
       setLoading(false);
     }
@@ -229,7 +233,7 @@ const CreateQuiz = () => {
                           required
                         />
                       </div>
-                      <div>
+                      {/* <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           End Date & Time
                         </label>
@@ -240,12 +244,13 @@ const CreateQuiz = () => {
                           className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
                           required
                         />
-                      </div>
+                      </div> */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Time Limit per Question (seconds)
+                          Time Limit per Question (seconds) :{" "}
+                          <span className="text-gray-600"> {timeLimit} seconds</span>
                         </label>
-                        <input
+                        {/* <input
                           type="number"
                           value={timeLimit}
                           onChange={(e) =>
@@ -256,7 +261,7 @@ const CreateQuiz = () => {
                           min="1"
                           className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
                           required
-                        />
+                        /> */}
                       </div>
                       <div className="text-sm text-gray-500">
                         Total Quiz Duration: {questions.length * timeLimit}{" "}
