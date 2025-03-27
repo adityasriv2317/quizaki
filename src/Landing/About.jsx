@@ -18,7 +18,7 @@ const About = () => {
       {/* boxes */}
       <div className="flex flex-col md:flex-row md:space-x-6 items-center [text-shadow:2px_2px_14px_rgba(0,0,0,0.3)] justify-center mt-14 space-y-6 md:space-y-0">
         {/* a */}
-        <div className="rounded-xl w-full md:w-1/3 aspect-[3/2] gap-6 p-6 bg-[rgb(255,93,122)] [box-shadow:0_8px_2px_rgb(216,78,103)] flex flex-col items-center text-center justify-center text-white">
+        <div className="rounded-xl w-full md:w-1/3 hover:scale-[1.02] transition-all aspect-[3/2] gap-6 p-6 bg-[rgb(255,93,122)] [box-shadow:0_8px_2px_rgb(216,78,103)] flex flex-col items-center text-center justify-center text-white">
           <img src={a} alt="" />
           <p className="font-bold text-xl">Engaging & Fun Challenges</p>
           <p className="text-sm">
@@ -28,7 +28,7 @@ const About = () => {
           </p>
         </div>
         {/* b */}
-        <div className="rounded-xl w-full md:w-1/3 aspect-[3/2] gap-6 p-6 bg-[rgb(242,159,5)] [box-shadow:0_8px_2px_rgb(210,125,3)] flex flex-col items-center text-center justify-center text-white">
+        <div className="rounded-xl w-full hover:scale-[1.02] transition-all md:w-1/3 aspect-[3/2] gap-6 p-6 bg-[rgb(242,159,5)] [box-shadow:0_8px_2px_rgb(210,125,3)] flex flex-col items-center text-center justify-center text-white">
           <img src={b} alt="" />
           <p className="text-xl font-bold">Boost Your Brain Health</p>
           <p className="text-sm">
@@ -36,7 +36,8 @@ const About = () => {
             health, supporting long-term mental fitness and resilience.
           </p>
         </div>
-        <div className="rounded-xl w-full md:w-1/3 aspect-[3/2] gap-6 p-6 bg-[rgb(66,197,148)] [box-shadow:0_8px_2px_rgb(50,170,125)] flex flex-col items-center text-center justify-center text-white">
+        {/* c */}
+        <div className="rounded-xl w-full hover:scale-[1.02] transition-all md:w-1/3 aspect-[3/2] gap-6 p-6 bg-[rgb(66,197,148)] [box-shadow:0_8px_2px_rgb(50,170,125)] flex flex-col items-center text-center justify-center text-white">
           <img src={c} alt="" />
           <p className="text-xl font-bold">Adaptive Difficulty Levels</p>
           <p className="text-sm">
