@@ -44,7 +44,7 @@ const DesktopLayout = ({
           {/* Score Section */}
           <div className="bg-violet-200 font-mono font-light text-lg md:text-2xl px-4 py-2 rounded-md mt-4">
             <span className="uppercase">score : {score}</span>
-            <div className="text-sm mt-2">Streak: {streak}</div>
+            <div className="text-sm mt-2">streak: {streak}</div>
           </div>
 
           {/* User Details */}
@@ -434,6 +434,7 @@ const QuizPage = () => {
     const isCorrect = option === quizState.question?.correctAnswer;
     const timeBonus = isCorrect ? Math.floor(quizState.countdown / 2) : 0;
     const pointsEarned = isCorrect ? 100 + timeBonus : 0;
+    const newStreak = isCorrect ? quizState.streak + 1 : 0;
 
     setQuizState(prev => ({
       ...prev,
@@ -458,15 +459,17 @@ const QuizPage = () => {
           timeLeft: quizState.countdown,
           questionScore: pointsEarned,
           timeBonus,
+          streak: newStreak,
         },
       ],
     }));
 
-    // Delay display score update until next question
+    // Delay display score and streak update until next question
     setTimeout(() => {
       setQuizState(prev => ({
         ...prev,
         displayScore: prev.displayScore + pointsEarned,
+        streak: newStreak,
       }));
     }, quizState.countdown * 1000);
   };
