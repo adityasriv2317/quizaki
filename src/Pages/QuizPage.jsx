@@ -369,50 +369,62 @@ const QuizPage = () => {
     return () => clearInterval(timer);
   }, [quizState.currentQuestionIndex]);
 
+  // Add this function before handleTimeUp
+  const calculateFinalStats = () => {
+    const totalQuestions = currentQuiz.questions.length;
+    const finalScore = stats.actualScore;
+    
+    return {
+      totalScore: finalScore,
+      timeBonus: stats.timeBonusTotal,
+      correctAnswers: stats.correctCount,
+      totalQuestions,
+      accuracy: Math.round((stats.correctCount / totalQuestions) * 100),
+      averageTime: Math.round(
+        stats.timeSpent.reduce((total, time) => total + time, 0) / totalQuestions
+      ),
+    };
+  };
+
   const handleTimeUp = () => {
     if (!currentQuiz?.questions) return;
 
     if (!quizState.selectedOption) {
-      setStats((prev) => ({
+      setStats(prev => ({
         ...prev,
         timeSpent: [...prev.timeSpent, 30],
       }));
     }
 
     if (quizState.currentQuestionIndex < currentQuiz.questions.length - 1) {
-      // First update the stats and answers
       const nextIndex = quizState.currentQuestionIndex + 1;
-      
-      // Then transition to next question with a clean delay
       setTimeout(() => {
-        setQuizState((prev) => ({
+        setQuizState(prev => ({
           ...prev,
           currentQuestionIndex: nextIndex,
           selectedOption: null,
           isAnswerLocked: false,
           countdown: 30,
         }));
-      }, 1000); // Increased delay for smoother transition
+      }, 1000);
     } else {
-      // Handle quiz completion
+      // Calculate final stats including the last question
+      const lastAnswer = stats.answers[stats.answers.length - 1];
       const totalQuestions = currentQuiz.questions.length;
       
-      setTimeout(() => {
-        setResults({
-          showResults: true,
-          quizStats: {
-            totalScore: stats.actualScore,
-            timeBonus: stats.timeBonusTotal,
-            correctAnswers: stats.correctCount,
-            totalQuestions,
-            accuracy: Math.round((stats.correctCount / totalQuestions) * 100),
-            averageTime: Math.round(
-              stats.timeSpent.reduce((total, time) => total + time, 0) /
-                totalQuestions
-            ),
-          },
-        });
-      }, 1000); // Added delay for final transition
+      setResults({
+        showResults: true,
+        quizStats: {
+          totalScore: stats.actualScore + (lastAnswer?.questionScore || 0),
+          timeBonus: stats.timeBonusTotal + (lastAnswer?.timeBonus || 0),
+          correctAnswers: stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0),
+          totalQuestions,
+          accuracy: Math.round(((stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0)) / totalQuestions) * 100),
+          averageTime: Math.round(
+            stats.timeSpent.reduce((total, time) => total + time, 0) / totalQuestions
+          ),
+        }
+      });
     }
   };
 
@@ -423,15 +435,14 @@ const QuizPage = () => {
     const timeBonus = isCorrect ? Math.floor(quizState.countdown / 2) : 0;
     const pointsEarned = isCorrect ? 100 + timeBonus : 0;
 
-    // Update quiz state
-    setQuizState((prev) => ({
+    setQuizState(prev => ({
       ...prev,
       selectedOption: option,
       isAnswerLocked: true,
     }));
 
-    // Update statistics
-    setStats((prev) => ({
+    // Update statistics immediately for final results
+    setStats(prev => ({
       ...prev,
       actualScore: prev.actualScore + pointsEarned,
       timeBonusTotal: prev.timeBonusTotal + timeBonus,
@@ -451,9 +462,9 @@ const QuizPage = () => {
       ],
     }));
 
-    // Update display score with delay
+    // Delay display score update until next question
     setTimeout(() => {
-      setQuizState((prev) => ({
+      setQuizState(prev => ({
         ...prev,
         displayScore: prev.displayScore + pointsEarned,
       }));
