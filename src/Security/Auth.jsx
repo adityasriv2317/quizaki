@@ -327,9 +327,12 @@ const Auth = () => {
                 onChange={(e) => setUserOtp(e.target.value)}
               />
 
-              <p className="text-center cursor-pointer text-sm md:text-base">
+              {/* <p className="text-center cursor-pointer text-sm md:text-base">
                 Didn't receive the OTP?{" "}
                 <span className="text-yellow-300">Resend OTP</span>
+              </p> */}
+              <p className="text-center cursor-pointer text-yellow-300 text-sm md:text-base">
+                Please check your spam folder if not received within 30 seconds.
               </p>
 
               <button

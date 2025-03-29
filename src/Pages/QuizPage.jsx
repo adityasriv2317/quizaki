@@ -223,8 +223,44 @@ const MobLayout = ({
   );
 };
 
-// Add this new component at the top with other layout components
+import axios from 'axios';
+
+// ResultLayout component
 const ResultLayout = ({ quizStats, onHomeClick }) => {
+  const siteData = localStorage.getItem("siteData");
+  const weUser = JSON.parse(siteData);
+  const uid = weUser.uid;
+  const code = weUser.code;
+
+  // console.log(uid,code);
+
+  useEffect(() => {
+    const userStatData = {
+      uid: uid,
+      quizId: code,
+      score: quizStats.totalScore,
+      streak: quizStats.streak || 0,
+      correctAnswers: quizStats.correctAnswers,
+      incorrectAnswers: quizStats.totalQuestions - quizStats.correctAnswers,
+      time: quizStats.averageTime
+    };
+
+    console.log(userStatData);
+
+    const saveAPI = "https://ccc-quiz.onrender.com/player/SavePlayer";
+
+    const saveStats = async () => {
+      try {
+        const response = await axios.post(saveAPI, userStatData);
+        console.log("Stats saved successfully:", response.data);
+      } catch (error) {
+        console.error("Error saving stats:", error);
+      }
+    };
+
+    saveStats();
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#b74358] to-[#812939] p-4">
       <div className="w-full max-w-4xl mx-auto px-4">
@@ -412,6 +448,7 @@ const QuizPage = () => {
       const lastAnswer = stats.answers[stats.answers.length - 1];
       const totalQuestions = currentQuiz.questions.length;
       
+      // In the handleTimeUp function, when setting final results:
       setResults({
         showResults: true,
         quizStats: {
@@ -419,6 +456,8 @@ const QuizPage = () => {
           timeBonus: stats.timeBonusTotal + (lastAnswer?.timeBonus || 0),
           correctAnswers: stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0),
           totalQuestions,
+          quizId: currentQuiz.id, // Add this
+          maxStreak: stats.maxStreak, // Add this
           accuracy: Math.round(((stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0)) / totalQuestions) * 100),
           averageTime: Math.round(
             stats.timeSpent.reduce((total, time) => total + time, 0) / totalQuestions
