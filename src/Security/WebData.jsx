@@ -4,6 +4,7 @@ const webContext = createContext();
 
 export const WebData = ({ children }) => {
   const [siteData, setSiteData] = useState(() => {
+
     const savedData = localStorage.getItem("siteData");
     if (savedData) {
       try {
@@ -12,6 +13,7 @@ export const WebData = ({ children }) => {
         console.error("Error parsing site data:", error);
         return {
           user: null,
+          uid: null,
           email: null,
           isLogin: false,
           code: null,
@@ -20,6 +22,7 @@ export const WebData = ({ children }) => {
     }
     return {
       user: null,
+      uid: null,
       email: null,
       isLogin: false,
       code: null,
@@ -33,6 +36,7 @@ export const WebData = ({ children }) => {
   const userLogout = () => {
     setSiteData({
       user: null,
+      uid: null,
       email: null,
       isLogin: false,
       code: null,
@@ -45,6 +49,7 @@ export const WebData = ({ children }) => {
     setSiteData({
       user: !user ? avatars[Math.floor(Math.random() * avatars.length)] : user,
       email,
+      uid: `${user}${email}21`,
       isLogin: true,
       code: null,
     });

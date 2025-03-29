@@ -75,15 +75,18 @@ const Auth = () => {
       return;
     }
 
-    const regUrl = `https://ccc-quiz.onrender.com/player/registerPlayer?recaptchaToken=${captchaToken}`;
+    const regUrl = "https://ccc-quiz.onrender.com/player/registerPlayer";
 
     const regData = {
       playerName: playerName,
+      uid: `${playerName}${email}21`,
       email: email,
+      recaptchaToken: captchaToken,
     };
 
     try {
       console.log("posting");
+      // console.log("Registration data:", regData);
       setRegLoader(true);
       const response = await axios.post(regUrl, regData);
       console.log("Registration response:", response);
@@ -337,7 +340,7 @@ const Auth = () => {
                 {otpLoader ? (
                   <div
                     className={`loader ${
-                      mouseOnButton ? "border-mag" : "border-white"
+                      mouseOnButton ? "border-mag" : "border-yellow-300"
                     } mx-auto border-t-transparent border-4 w-6 h-6 rounded-full animate-spin`}
                   />
                 ) : (
