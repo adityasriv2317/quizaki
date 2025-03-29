@@ -4,7 +4,7 @@ import { useWebData } from "../Security/WebData";
 import CountdownTimer from "../assets/CountdownTimer";
 import { useMediaQuery } from "react-responsive";
 import { Lock } from "lucide-react";
-import { use } from "react";
+import axios from "axios";
 import { useQuiz } from "../Context/QuizContext";
 
 // Pass props
@@ -223,10 +223,9 @@ const MobLayout = ({
   );
 };
 
-import axios from 'axios';
-
-// ResultLayout component
+// Add this new component at the top with other layout components
 const ResultLayout = ({ quizStats, onHomeClick }) => {
+
   const siteData = localStorage.getItem("siteData");
   const weUser = JSON.parse(siteData);
   const uid = weUser.uid;
@@ -252,7 +251,7 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
     const saveStats = async () => {
       try {
         const response = await axios.post(saveAPI, userStatData);
-        console.log("Stats saved successfully:", response.data);
+        console.log("Stats saved successfully");
       } catch (error) {
         console.error("Error saving stats:", error);
       }
@@ -448,7 +447,6 @@ const QuizPage = () => {
       const lastAnswer = stats.answers[stats.answers.length - 1];
       const totalQuestions = currentQuiz.questions.length;
       
-      // In the handleTimeUp function, when setting final results:
       setResults({
         showResults: true,
         quizStats: {
@@ -456,8 +454,6 @@ const QuizPage = () => {
           timeBonus: stats.timeBonusTotal + (lastAnswer?.timeBonus || 0),
           correctAnswers: stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0),
           totalQuestions,
-          quizId: currentQuiz.id, // Add this
-          maxStreak: stats.maxStreak, // Add this
           accuracy: Math.round(((stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0)) / totalQuestions) * 100),
           averageTime: Math.round(
             stats.timeSpent.reduce((total, time) => total + time, 0) / totalQuestions
