@@ -6,6 +6,7 @@ import { useMediaQuery } from "react-responsive";
 import { Lock } from "lucide-react";
 import axios from "axios";
 import { useQuiz } from "../Context/QuizContext";
+import { useAuth } from '../Security/AuthContext';
 
 // Pass props
 const DesktopLayout = ({

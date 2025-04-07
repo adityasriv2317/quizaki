@@ -13,44 +13,47 @@ import { AdminProvider } from "./Security/AdminContext";
 import CreateQuiz from "./Admin/CreateQuiz";
 import Analytics from "./Admin/Analytics";
 import { QuizProvider } from "./Context/QuizContext";
+import { AuthProvider } from "./Security/AuthContext";
 
 const App = () => {
   return (
     <AdminProvider>
-      <WebData>
-        <QuizProvider>
-          <Router>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/auth/:authType" element={<Auth />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
+      <AuthProvider>
+        <WebData>
+          <QuizProvider>
+            <Router>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/auth/:authType" element={<Auth />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
 
-              {/* Protected admin routes */}
-              <Route
-                path="/admin/*"
-                element={
-                  <ProtectedRoute>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/create"
-                element={
-                  <ProtectedRoute>
-                    <CreateQuiz />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Protected admin routes */}
+                <Route
+                  path="/admin/*"
+                  element={
+                    <ProtectedRoute>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/create"
+                  element={
+                    <ProtectedRoute>
+                      <CreateQuiz />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* <Route path="/room" element={<QuizRoom />} /> */}
-              <Route path="/room/:roomId/:player" element={<QuizRoom />} />
-              <Route path="/quiz/:roomCode" element={<QuizPage />} />
-            </Routes>
-          </Router>
-        </QuizProvider>
-      </WebData>
+                {/* <Route path="/room" element={<QuizRoom />} /> */}
+                <Route path="/room/:roomId/:player" element={<QuizRoom />} />
+                <Route path="/quiz/:roomCode" element={<QuizPage />} />
+              </Routes>
+            </Router>
+          </QuizProvider>
+        </WebData>
+      </AuthProvider>
     </AdminProvider>
   );
 };

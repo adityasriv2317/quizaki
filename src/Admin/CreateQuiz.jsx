@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Papa from 'papaparse';
 import {
   faPlus,
   faTrash,
@@ -12,6 +13,7 @@ import {
   faTimes,
   faClock,
   faSpinner,
+  faFileUpload 
 } from "@fortawesome/free-solid-svg-icons";
 import mesh from "/graphics/mesh.svg";
 import axios from "axios";
@@ -19,11 +21,51 @@ import axios from "axios";
 const createAPI = "https://ccc-quiz.onrender.com/admin/CreateQuiz";
 
 const CreateQuiz = () => {
+  // Add new state for toggle
+  const [isTraditional, setIsTraditional] = useState(true);
+  
+  // Add this with other state declarations
+  const [csvError, setCsvError] = useState('');
+
+  // Add this with other function declarations
+  const handleCsvUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      Papa.parse(file, {
+        complete: (results) => {
+          try {
+            const newQuestions = results.data
+              .filter(row => row.length >= 6) // Skip empty rows
+              .map(row => ({
+                question: row[0],
+                options: [row[1], row[2], row[3], row[4]],
+                correctAnswer: parseInt(row[5]) - 1, // Convert 1-based to 0-based index
+                image: null,
+                category: row[6] || '',
+                difficulty: row[7] || ''
+              }));
+
+            if (newQuestions.length > 0) {
+              setQuestions([...questions, ...newQuestions]);
+              setCsvError('');
+            } else {
+              setCsvError('No valid questions found in CSV');
+            }
+          } catch (error) {
+            setCsvError('Invalid CSV format');
+          }
+        },
+        error: (error) => {
+          setCsvError('Error reading CSV file');
+        }
+      });
+    }
+  };
   const navigate = useNavigate();
   const [quizTitle, setQuizTitle] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [timeLimit, setTimeLimit] = useState(30); // Default 30 seconds per question
+  const [timeLimit, setTimeLimit] = useState(30);
   const [questions, setQuestions] = useState([
     {
       question: "",
@@ -250,18 +292,6 @@ const CreateQuiz = () => {
                           Time Limit per Question (seconds) :{" "}
                           <span className="text-gray-600"> {timeLimit} seconds</span>
                         </label>
-                        {/* <input
-                          type="number"
-                          value={timeLimit}
-                          onChange={(e) =>
-                            setTimeLimit(
-                              Math.max(1, parseInt(e.target.value) || 1)
-                            )
-                          }
-                          min="1"
-                          className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
-                          required
-                        /> */}
                       </div>
                       <div className="text-sm text-gray-500">
                         Total Quiz Duration: {questions.length * timeLimit}{" "}
@@ -275,56 +305,48 @@ const CreateQuiz = () => {
 
             {/* Right Panel - Questions */}
             <div className="lg:w-2/3 space-y-6">
-              {/* Questions */}
-              <div className="space-y-6">
-                {questions.map((q, questionIndex) => (
-                  <div
-                    key={questionIndex}
-                    className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 md:p-8 border border-white/20"
-                  >
-                    <div className="flex justify-between items-center mb-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-[rgb(137,207,251)] flex items-center justify-center text-white font-semibold">
-                          {questionIndex + 1}
+              {/* Add toggle switch */}
+              <div className="flex items-center justify-end space-x-3 mb-4">
+                <span className="text-sm text-white">CSV Import</span>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isTraditional}
+                    onChange={() => setIsTraditional(!isTraditional)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[rgb(137,207,251)] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[rgb(137,207,251)]"></div>
+                </label>
+                <span className="text-sm text-white">Manual Input</span>
+              </div>
+
+              {/* Conditional rendering based on toggle */}
+              {isTraditional ? (
+                <div className="space-y-6">
+                  {questions.map((q, questionIndex) => (
+                    <div key={questionIndex} className="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6 md:p-8 border border-white/20">
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="flex-1">
+                          <input
+                            type="text"
+                            value={q.question}
+                            onChange={(e) => updateQuestion(questionIndex, "question", e.target.value)}
+                            className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
+                            placeholder="Enter your question"
+                            required
+                          />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          Question {questionIndex + 1}
-                        </h3>
-                      </div>
-                      {questions.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeQuestion(questionIndex)}
-                          className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                          className="ml-4 text-red-500 hover:text-red-600 transition-colors"
                         >
                           <FontAwesomeIcon icon={faTrash} />
                         </button>
-                      )}
-                    </div>
-
-                    <div className="space-y-4 md:space-y-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Question Text
-                        </label>
-                        <input
-                          type="text"
-                          value={q.question}
-                          onChange={(e) =>
-                            updateQuestion(
-                              questionIndex,
-                              "question",
-                              e.target.value
-                            )
-                          }
-                          className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
-                          placeholder="Enter your question"
-                          required
-                        />
                       </div>
 
                       {/* Image Upload */}
-                      <div className="space-y-2">
+                      <div className="space-y-2 mb-6">
                         <label className="block text-sm font-medium text-gray-700">
                           Question Image (Optional)
                         </label>
@@ -347,27 +369,16 @@ const CreateQuiz = () => {
                           <div className="flex items-center justify-center w-full">
                             <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <FontAwesomeIcon
-                                  icon={faImage}
-                                  className="w-8 h-8 mb-2 text-gray-500"
-                                />
+                                <FontAwesomeIcon icon={faImage} className="w-8 h-8 mb-2 text-gray-500" />
                                 <p className="mb-2 text-sm text-gray-500">
-                                  <span className="font-semibold">
-                                    Click to upload
-                                  </span>{" "}
-                                  or drag and drop
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  PNG, JPG or GIF (MAX. 800x400px)
+                                  <span className="font-semibold">Click to upload</span> or drag and drop
                                 </p>
                               </div>
                               <input
                                 type="file"
                                 className="hidden"
                                 accept="image/*"
-                                onChange={(e) =>
-                                  handleImageUpload(questionIndex, e)
-                                }
+                                onChange={(e) => handleImageUpload(questionIndex, e)}
                               />
                             </label>
                           </div>
@@ -377,34 +388,19 @@ const CreateQuiz = () => {
                       {/* Options */}
                       <div className="space-y-3 md:space-y-4">
                         {q.options.map((option, optionIndex) => (
-                          <div
-                            key={optionIndex}
-                            className="flex items-center space-x-3 md:space-x-4"
-                          >
+                          <div key={optionIndex} className="flex items-center space-x-3 md:space-x-4">
                             <input
                               type="radio"
                               name={`correct-${questionIndex}`}
                               checked={q.correctAnswer === optionIndex}
-                              onChange={() =>
-                                updateQuestion(
-                                  questionIndex,
-                                  "correctAnswer",
-                                  optionIndex
-                                )
-                              }
+                              onChange={() => updateQuestion(questionIndex, "correctAnswer", optionIndex)}
                               className="h-5 w-5 text-[rgb(137,207,251)] focus:ring-[rgb(137,207,251)]"
                             />
                             <div className="flex-1">
                               <input
                                 type="text"
                                 value={option}
-                                onChange={(e) =>
-                                  updateOption(
-                                    questionIndex,
-                                    optionIndex,
-                                    e.target.value
-                                  )
-                                }
+                                onChange={(e) => updateOption(questionIndex, optionIndex, e.target.value)}
                                 className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
                                 placeholder={`Option ${optionIndex + 1}`}
                                 required
@@ -414,42 +410,24 @@ const CreateQuiz = () => {
                         ))}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Category */}
+                      {/* Category and Difficulty */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Category
-                          </label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                           <input
                             type="text"
                             value={q.category}
-                            onChange={(e) =>
-                              updateQuestion(
-                                questionIndex,
-                                "category",
-                                e.target.value
-                              )
-                            }
+                            onChange={(e) => updateQuestion(questionIndex, "category", e.target.value)}
                             className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
                             placeholder="Enter category"
                             required
                           />
                         </div>
-
-                        {/* Difficulty */}
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Difficulty
-                          </label>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
                           <select
                             value={q.difficulty}
-                            onChange={(e) =>
-                              updateQuestion(
-                                questionIndex,
-                                "difficulty",
-                                e.target.value
-                              )
-                            }
+                            onChange={(e) => updateQuestion(questionIndex, "difficulty", e.target.value)}
                             className="w-full px-4 py-3 rounded-md border border-gray-300 focus:ring-2 focus:ring-[rgb(137,207,251)] focus:border-transparent transition-all duration-200"
                             required
                           >
@@ -461,34 +439,43 @@ const CreateQuiz = () => {
                         </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <label className="relative cursor-pointer">
+                      <input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleCsvUpload}
+                        className="hidden"
+                      />
+                      <div className="flex items-center justify-center space-x-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-all duration-200 shadow-lg hover:shadow-xl">
+                        <FontAwesomeIcon icon={faFileUpload} />
+                        <span>Import CSV</span>
+                      </div>
+                    </label>
+                    {csvError && (
+                      <p className="text-red-500 text-sm">{csvError}</p>
+                    )}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
 
-              {/* Action Buttons - Moved to right panel */}
-              <div className="flex justify-end space-x-4 mt-8">
-                <button
-                  type="button"
-                  onClick={addQuestion}
-                  className="flex items-center justify-center space-x-2 px-6 py-3 bg-[rgb(137,207,251)] text-white rounded-md hover:bg-[rgb(137,207,251)]/90 transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  <FontAwesomeIcon icon={faPlus} />
-                  <span>Add Question</span>
-                </button>
-                <button
-                  type="submit"
-                  className="flex items-center justify-center space-x-2 px-8 py-3 bg-[rgb(183,67,88)] text-white rounded-md hover:bg-[rgb(183,67,88)]/90 transition-all duration-200 shadow-lg hover:shadow-xl"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <FontAwesomeIcon icon={faSpinner} spin />
-                  ) : (
-                    <>
-                      <FontAwesomeIcon icon={faSave} />
-                      <span>Save Quiz</span>
-                    </>
-                  )}
-                </button>
+              {/* Action Buttons */}
+              <div className="flex justify-end space-x-4">
+                {isTraditional && (
+                  <button
+                    type="button"
+                    onClick={addQuestion}
+                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-[rgb(137,207,251)] text-white rounded-md hover:bg-[rgb(137,207,251)]/90 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <FontAwesomeIcon icon={faPlus} />
+                    <span>Add Question</span>
+                  </button>
+                )}
+                {/* ... Save button ... */}
               </div>
             </div>
           </div>

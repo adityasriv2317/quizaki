@@ -3,6 +3,7 @@ import hero from "/imgs/hero1.svg";
 
 import { useWebData} from "../Security/WebData";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../Security/AuthContext';
 
 const Landing = () => {
   const [cta, setCta] = useState(false);
@@ -10,6 +11,7 @@ const Landing = () => {
   const { siteData, setSiteData } = useWebData();
   const [roomCode, setRoomCode] = useState("");
   const navigate = useNavigate();
+  const { tokens } = useAuth();
 
   const joinRoom = (e) => {
     e.preventDefault();
@@ -19,8 +21,8 @@ const Landing = () => {
       return;
     }
 
-    if (!siteData?.user) {
-      console.error("User information is missing!");
+    if (!siteData?.user || !tokens.accessToken) {
+      console.error("User information or authentication missing!");
       return;
     }
 

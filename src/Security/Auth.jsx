@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import authImg from "/graphics/auth.svg";
@@ -10,6 +11,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import { useWebData } from "./WebData";
+import { useAuth } from './AuthContext';
 
 const MessagePrompt = ({ type, message, clearMessage }) => {
   if (!message) return null;
@@ -54,6 +56,7 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const { userLogin } = useWebData();
+  const { saveTokens } = useAuth();
 
   function onChange(value) {
     console.log("Captcha value:", value);
@@ -137,6 +140,12 @@ const Auth = () => {
     try {
       const res = await axios.post(otpAPI);
       console.log("OTP verified:", res);
+      
+      // Save tokens using context
+      if (res.data.accessToken && res.data.refreshToken) {
+        saveTokens(res.data.accessToken, res.data.refreshToken);
+      }
+
       setMessageType("success");
       setMessage("OTP verified successfully. You can now login.");
       userLogin(playerName, email);

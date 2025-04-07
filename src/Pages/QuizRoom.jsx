@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useWebData } from "../Security/WebData";
 import axios from "axios";
+import { useAuth } from "../Security/AuthContext";
 
 const QuizRoom = () => {
   const { siteData } = useWebData();
@@ -13,12 +14,13 @@ const QuizRoom = () => {
   const [countdown, setCountdown] = useState(30);
   const [currentDate, setCurrentDate] = useState(new Date());
   const roomCode = siteData.code;
+  const { tokens } = useAuth();
 
   async function getQuizData(roomCode) {
     try {
+      console.log(tokens.accessToken);
       const response = await axios.get(
-        "https://ccc-quiz.onrender.com/admin/fetchQuiz",
-        { params: { email: "saurabhsri.mau@gmail.com" } }
+        "https://ccc-quiz.onrender.com/admin/fetchQuiz?email=saurabhsri.mau@gmail.com"
       );
       // find the quiz with the given room code
       const quiz = response.data.find((q) => q.quizId === roomCode);
@@ -37,10 +39,14 @@ const QuizRoom = () => {
         setData([]);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setData([]);
-    } finally {
-      setLoading(false);
+      if (error.response?.status === 401) {
+        // Handle unauthorized access
+        console.error("Authentication error:", error);
+        navigate("/auth/login");
+      } else {
+        console.error("Error fetching data:", error);
+        setData([]);
+      }
     }
   }
 
@@ -60,10 +66,10 @@ const QuizRoom = () => {
           clearInterval(countdownInterval);
           // Only navigate if we have valid quiz data
           if (data && data.questions && data.questions.length > 0) {
-            navigate(`/quiz/${roomCode}`, { 
-              state: { 
-                quizData: data
-              } 
+            navigate(`/quiz/${roomCode}`, {
+              state: {
+                quizData: data,
+              },
             });
           }
           return 0;

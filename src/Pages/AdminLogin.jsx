@@ -67,8 +67,9 @@ const AdminLogin = () => {
 
     try {
       setLoginLoader(true);
-      // For demo purposes using hardcoded credentials
-      // In production, this should be an API call
+      
+      // const response = await axios
+
       if (email === 'admin@ccc.akgec.live' && password === 'password') {
         await login(email);
         setMessageType("success");
