@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import authImg from "/graphics/auth.svg";
@@ -10,6 +11,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 import { useWebData } from "./WebData";
+import { useAuth } from './AuthContext';
 
 const MessagePrompt = ({ type, message, clearMessage }) => {
   if (!message) return null;
@@ -54,9 +56,10 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const { userLogin } = useWebData();
+  const { saveTokens } = useAuth();
 
   function onChange(value) {
-    console.log("Captcha value:", value);
+    // console.log("Captcha value:", value);
     setCaptchaToken(value);
     setCaptcha(!!value);
   }
@@ -85,15 +88,15 @@ const Auth = () => {
     };
 
     try {
-      console.log("posting");
+      // console.log("posting");
       // console.log("Registration data:", regData);
       setRegLoader(true);
       const response = await axios.post(regUrl, regData);
-      console.log("Registration response:", response);
-      console.log("Registration form submitted:", { playerName, email });
+      // console.log("Registration response:", response);
+      // console.log("Registration form submitted:", { playerName, email });
       setOtpOverlay(true);
     } catch (error) {
-      console.error("Registration error:", error);
+      // console.error("Registration error:", error);
       setMessageType("error");
       setMessage("Registration failed. Please try again.");
     } finally {
@@ -115,10 +118,10 @@ const Auth = () => {
         setOtpOverlay(true);
       }, 5000);
     } catch (error) {
-      console.error("Error in login", error);
+      // console.error("Error in login", error);
       setMessage("Login failed. Please check your email and try again.");
     } finally {
-      console.log("Login form submitted:", { email });
+      // console.log("Login form submitted:", { email });
       setLoginLoader(false);
     }
   };
@@ -136,16 +139,22 @@ const Auth = () => {
 
     try {
       const res = await axios.post(otpAPI);
-      console.log("OTP verified:", res);
+      // console.log("OTP verified:", res);
+      
+      // Save tokens using context
+      if (res.data.accessToken && res.data.refreshToken) {
+        saveTokens(res.data.accessToken, res.data.refreshToken);
+      }
+
       setMessageType("success");
       setMessage("OTP verified successfully. You can now login.");
       userLogin(playerName, email);
       navigate("/");
     } catch (error) {
-      console.log("Error in OTP verification", error);
+      // console.log("Error in OTP verification", error);
       setMessageType("error");
       setMessage("OTP verification failed. Please try again.");
-      console.error(error);
+      // console.error(error);
     } finally {
       setOtpLoader(false);
     }

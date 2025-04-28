@@ -3,6 +3,7 @@ import hero from "/imgs/hero1.svg";
 
 import { useWebData} from "../Security/WebData";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from '../Security/AuthContext';
 
 const Landing = () => {
   const [cta, setCta] = useState(false);
@@ -10,17 +11,18 @@ const Landing = () => {
   const { siteData, setSiteData } = useWebData();
   const [roomCode, setRoomCode] = useState("");
   const navigate = useNavigate();
+  const { tokens } = useAuth();
 
   const joinRoom = (e) => {
     e.preventDefault();
 
     if (!roomCode.trim()) {
-      console.error("Room code is required!");
+      // console.error("Room code is required!");
       return;
     }
 
-    if (!siteData?.user) {
-      console.error("User information is missing!");
+    if (!siteData?.user || !tokens.accessToken) {
+      // console.error("User information or authentication missing!");
       return;
     }
 
@@ -31,7 +33,7 @@ const Landing = () => {
       }));
       setHasSubmitted(true);
     } finally {
-      console.log("updated");
+      // console.log("updated");
     }
   };
 
@@ -42,7 +44,7 @@ const Landing = () => {
       siteData.code === roomCode &&
       siteData.user
     ) {
-      console.log("code:", siteData.code, "roomCode:", roomCode);
+      // console.log("code:", siteData.code, "roomCode:", roomCode);
       navigate(`/room/${roomCode}/${siteData.user}`);
     }
   }, [hasSubmitted, siteData.code, roomCode, siteData.user, navigate]);

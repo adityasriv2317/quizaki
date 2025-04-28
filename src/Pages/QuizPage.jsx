@@ -6,6 +6,9 @@ import { useMediaQuery } from "react-responsive";
 import { Lock } from "lucide-react";
 import axios from "axios";
 import { useQuiz } from "../Context/QuizContext";
+import { useAuth } from "../Security/AuthContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUndo } from "@fortawesome/free-solid-svg-icons";
 
 // Pass props
 const DesktopLayout = ({
@@ -15,6 +18,7 @@ const DesktopLayout = ({
   selectedOption,
   isAnswerLocked,
   setSelectedOption,
+  onResetSelection, // Add onResetSelection prop
   onTimeUp,
   countdown,
   score,
@@ -74,32 +78,46 @@ const DesktopLayout = ({
 
               {/* Answer Options */}
               <div className="mt-auto">
-                <p className="text-lg text-white font-light mb-4 ml-4 text-center md:text-left">
-                  Choose the Correct Option
-                </p>
+                <div className="flex items-center justify-between mb-4">
+                  {" "}
+                  {/* Added mb-4 for spacing */}
+                  <p className="text-lg text-white font-light ml-4 text-center md:text-left">
+                    Choose the Correct Option
+                  </p>
+                  {/* Reset Button - Show only when an option is selected and locked */}
+                  {/* {selectedOption && isAnswerLocked && ( */}
+                    <button
+                      onClick={onResetSelection} // Use the passed handler
+                      className="bg-red-300 text-black/70 font-semibold px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
+                    >
+                      <FontAwesomeIcon icon={faUndo} className="mr-2" />
+                      Reset
+                    </button>
+                  {/* )} */}
+                </div>
                 <div className="grid grid-cols-1 gap-4 mx-auto max-w-[90%] md:max-w-[90%]">
                   {question.options.map((option, index) => (
-                    // In both DesktopLayout and MobileLayout, update the option button:
                     <button
                       key={index}
+                      // Disable other options when one is selected and locked
                       disabled={isAnswerLocked && selectedOption !== option}
                       className={`py-3 px-20 md:py-4 rounded-md shadow-md flex flex-row items-center justify-between text-base md:text-lg font-semibold transition-all ${
                         selectedOption === option
-                          ? isAnswerLocked
-                            ? option === question.correctAnswer
-                              ? "bg-red-200 text-black"
-                              : "bg-red-200 text-black"
-                            : "bg-red-200 text-black"
+                          ? "bg-red-200 text-black ring-2 ring-red-500" // Highlight selected/locked
                           : "bg-[rgb(244,230,230)]"
                       } ${
+                        // Dim other options when one is locked
                         isAnswerLocked && selectedOption !== option
                           ? "opacity-50 cursor-not-allowed"
-                          : ""
+                          : "hover:bg-red-100" // Add hover effect only if not locked
                       }`}
                       onClick={() => setSelectedOption(option)}
                     >
                       {option}
-                      {selectedOption === option && <Lock size={20} />}
+                      {/* Show lock icon only on the selected option when locked */}
+                      {selectedOption === option && isAnswerLocked && (
+                        <Lock size={20} />
+                      )}
                     </button>
                   ))}
                 </div>
@@ -118,7 +136,8 @@ const MobLayout = ({
   selectedOption,
   setSelectedOption,
   isAnswerLocked,
-  setIsAnswerLocked,
+  setIsAnswerLocked, // Keep this if needed elsewhere, but reset handles its part
+  onResetSelection, // Add onResetSelection prop
   onTimeUp,
   countdown,
   score,
@@ -173,23 +192,39 @@ const MobLayout = ({
 
       {/* Options Section: Displays answer choices and a timer progress bar */}
       <div className="bg-white py-6 px-6 rounded-t-[50px] shadow-md">
-        {/* prompt for selecting correct option */}
-        <p className="text-xl font-poppins font-bold text-center mb-8 text-gray-800">
-          Select the Correct Option
-        </p>
+        <div className="flex justify-between items-center mb-8">
+          <p className="text-xl font-poppins font-bold text-gray-800">
+            Select the Correct Option
+          </p>
+          {/* Reset Button - Show only when an option is selected and locked */}
+          {/* {selectedOption && isAnswerLocked && ( */}
+            <button
+              onClick={onResetSelection} // Use the passed handler
+              className="px-3 py-1.5 bg-red-50 text-black/70 rounded-full transition-all hover:bg-red-100"
+            >
+              <FontAwesomeIcon icon={faUndo} className="mr-1" />
+              Reset
+            </button>
+          {/* )} */}
+        </div>
         {/* List of answer options */}
         <div className="grid grid-cols-1 gap-6">
           {question?.options.map((option, index) => (
             <button
               key={index}
+              // Disable other options when one is selected and locked
+              disabled={isAnswerLocked && selectedOption !== option}
               className={`flex items-center p-3 border rounded-full text-xl font-bold transition-all ${
                 selectedOption === option
-                  ? "bg-gray-50 text-black border-red-400" // Highlight selected option
+                  ? "bg-gray-50 text-black border-red-400 ring-2 ring-red-500" // Highlight selected/locked
                   : "bg-gray-100 border-gray-200" // Default option style
+              } ${
+                // Dim other options when one is locked
+                isAnswerLocked && selectedOption !== option
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-gray-200" // Add hover effect only if not locked
               }`}
-              onClick={(index) => {
-                setSelectedOption(option, index);
-              }}
+              onClick={() => setSelectedOption(option)} // Pass only option
             >
               {/* Display option letter (A, B, C, D) */}
               <span
@@ -202,8 +237,9 @@ const MobLayout = ({
                 {String.fromCharCode(65 + index)}
               </span>
               {option}
-              {selectedOption === option && (
-                <Lock size={20} className="mx-16" />
+              {/* Show lock icon only on the selected option when locked */}
+              {selectedOption === option && isAnswerLocked && (
+                <Lock size={20} className="ml-auto mr-2" /> // Adjusted margin
               )}
             </button>
           ))}
@@ -225,7 +261,6 @@ const MobLayout = ({
 
 // Add this new component at the top with other layout components
 const ResultLayout = ({ quizStats, onHomeClick }) => {
-
   const siteData = localStorage.getItem("siteData");
   const weUser = JSON.parse(siteData);
   const uid = weUser.uid;
@@ -241,7 +276,7 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
       streak: quizStats.streak || 0,
       correctAnswers: quizStats.correctAnswers,
       incorrectAnswers: quizStats.totalQuestions - quizStats.correctAnswers,
-      time: quizStats.averageTime
+      time: quizStats.averageTime,
     };
 
     console.log(userStatData);
@@ -298,19 +333,16 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
           </div>
 
           {/* Detailed Stats */}
-          <div className="bg-gray-50 rounded-xl p-6 mb-8">
-            <h3 className="text-xl font-semibold font-oxanium text-gray-800 mb-4">
-              Quiz Statistics
-            </h3>
-            <div className="grid grid-cols-1 font-poppins sm:grid-cols-2 gap-4">
+          <div className="bg-gray-50 rounded-xl p-2 mb-8">
+            <div className="mx-auto">
               <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
                 <span className="text-gray-600">Accuracy Rate</span>
                 <span className="font-semibold">{quizStats.accuracy}%</span>
               </div>
-              <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
+              {/* <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
                 <span className="text-gray-600">Average Time</span>
                 <span className="font-semibold">{quizStats.averageTime}s</span>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -408,7 +440,7 @@ const QuizPage = () => {
   const calculateFinalStats = () => {
     const totalQuestions = currentQuiz.questions.length;
     const finalScore = stats.actualScore;
-    
+
     return {
       totalScore: finalScore,
       timeBonus: stats.timeBonusTotal,
@@ -416,7 +448,8 @@ const QuizPage = () => {
       totalQuestions,
       accuracy: Math.round((stats.correctCount / totalQuestions) * 100),
       averageTime: Math.round(
-        stats.timeSpent.reduce((total, time) => total + time, 0) / totalQuestions
+        stats.timeSpent.reduce((total, time) => total + time, 0) /
+          totalQuestions
       ),
     };
   };
@@ -425,7 +458,7 @@ const QuizPage = () => {
     if (!currentQuiz?.questions) return;
 
     if (!quizState.selectedOption) {
-      setStats(prev => ({
+      setStats((prev) => ({
         ...prev,
         timeSpent: [...prev.timeSpent, 30],
       }));
@@ -434,7 +467,7 @@ const QuizPage = () => {
     if (quizState.currentQuestionIndex < currentQuiz.questions.length - 1) {
       const nextIndex = quizState.currentQuestionIndex + 1;
       setTimeout(() => {
-        setQuizState(prev => ({
+        setQuizState((prev) => ({
           ...prev,
           currentQuestionIndex: nextIndex,
           selectedOption: null,
@@ -446,7 +479,7 @@ const QuizPage = () => {
       // Calculate final stats including the last question
       const lastAnswer = stats.answers[stats.answers.length - 1];
       const totalQuestions = currentQuiz.questions.length;
-      
+
       setResults({
         showResults: true,
         quizStats: {
@@ -454,16 +487,37 @@ const QuizPage = () => {
           timeBonus: stats.timeBonusTotal + (lastAnswer?.timeBonus || 0),
           correctAnswers: stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0),
           totalQuestions,
-          accuracy: Math.round(((stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0)) / totalQuestions) * 100),
-          averageTime: Math.round(
-            stats.timeSpent.reduce((total, time) => total + time, 0) / totalQuestions
+          accuracy: Math.round(
+            ((stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0)) /
+              totalQuestions) *
+              100
           ),
-        }
+          averageTime: Math.round(
+            stats.timeSpent.reduce((total, time) => total + time, 0) /
+              totalQuestions
+          ),
+        },
       });
     }
   };
 
+  // Add this handler function
+  const handleResetSelection = () => {
+    if (quizState.isAnswerLocked) {
+      // Only allow reset if an answer was locked by selection
+      setQuizState((prev) => ({
+        ...prev,
+        selectedOption: null,
+        isAnswerLocked: false, // Unlock to allow re-selection
+      }));
+      // Note: We don't revert score/stats here as they are updated upon selection lock.
+      // If the user re-selects, handleOptionSelect will run again.
+      // If they don't re-select before time runs out, handleTimeUp will proceed without a selected option.
+    }
+  };
+
   const handleOptionSelect = (option) => {
+    // No changes needed here based on the request, it locks immediately
     if (quizState.isAnswerLocked) return;
 
     const isCorrect = option === quizState.question?.correctAnswer;
@@ -471,14 +525,14 @@ const QuizPage = () => {
     const pointsEarned = isCorrect ? 100 + timeBonus : 0;
     const newStreak = isCorrect ? quizState.streak + 1 : 0;
 
-    setQuizState(prev => ({
+    setQuizState((prev) => ({
       ...prev,
       selectedOption: option,
-      isAnswerLocked: true,
+      isAnswerLocked: true, // Lock happens here
     }));
 
     // Update statistics immediately for final results
-    setStats(prev => ({
+    setStats((prev) => ({
       ...prev,
       actualScore: prev.actualScore + pointsEarned,
       timeBonusTotal: prev.timeBonusTotal + timeBonus,
@@ -501,7 +555,7 @@ const QuizPage = () => {
 
     // Delay display score and streak update until next question
     setTimeout(() => {
-      setQuizState(prev => ({
+      setQuizState((prev) => ({
         ...prev,
         displayScore: prev.displayScore + pointsEarned,
         streak: newStreak,
@@ -524,10 +578,12 @@ const QuizPage = () => {
     question: quizState.question,
     isAnswerLocked: quizState.isAnswerLocked,
     selectedOption: quizState.selectedOption,
-    setSelectedOption: handleOptionSelect,
+    setSelectedOption: handleOptionSelect, // This locks the answer
+    onResetSelection: handleResetSelection, // Pass the new handler
     countdown: quizState.countdown,
-    setIsAnswerLocked: (value) =>
-      setQuizState((prev) => ({ ...prev, isAnswerLocked: value })),
+    setIsAnswerLocked: (
+      value // This might not be needed if locking is handled internally
+    ) => setQuizState((prev) => ({ ...prev, isAnswerLocked: value })),
     onTimeUp: handleTimeUp,
     score: quizState.displayScore,
     currentQuestionIndex: quizState.currentQuestionIndex,
