@@ -7,7 +7,6 @@ Quizaki is a web-based application built with React and Vite that allows adminis
 *   **Admin Dashboard:** Manage quizzes (create, view status).
 *   **Quiz Creation:** Interface for administrators to add new quizzes with questions and options.
 *   **Quiz Taking:** Interface for users to join quiz rooms and answer questions with a timer.
-*   **Real-time Updates (Potential):** Although not currently implemented in the provided code, the project includes `socket.io-client`, suggesting potential for real-time features.
 *   **Results & Analytics:** View quiz results, scores, accuracy, and potentially more detailed analytics for admins.
 *   **Responsive Design:** Adapts to different screen sizes using Tailwind CSS.
 
