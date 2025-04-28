@@ -124,6 +124,18 @@ const CreateQuiz = () => {
     updateQuestion(questionIndex, "image", null);
   };
 
+  function generateCode(length = 8) {
+    const characters = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // No I, L, O, 1, 0
+    let code = '';
+    
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        code += characters[randomIndex];
+    }
+
+    return code;
+}
+
   const handleSubmit = async (e) => {
       e.preventDefault();
       setLoading(true);
@@ -159,7 +171,7 @@ const CreateQuiz = () => {
   
       // Format quiz data
       const quizData = {
-        quizId: `quiz${Date.now()}`,
+        quizId: `${generateCode()}`,
         email: "saurabhsri.mau@gmail.com",
         quizTitle,
         status: false,
