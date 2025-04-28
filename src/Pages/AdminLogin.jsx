@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAdminContext } from '../Security/AdminContext';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useAdminContext } from "../Security/AdminContext";
 import authImg from "/graphics/auth.svg";
 import mesh from "/graphics/mesh.svg";
 import ReCAPTCHA from "react-google-recaptcha";
+import axios from "axios";
 
 const MessagePrompt = ({ type, message, clearMessage }) => {
   if (!message) return null;
@@ -26,32 +27,32 @@ const MessagePrompt = ({ type, message, clearMessage }) => {
 };
 
 const AdminLogin = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
   const [loginLoader, setLoginLoader] = useState(false);
   const [mouseOnButton, setMouseOnButton] = useState(true);
   const [captcha, setCaptcha] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAdminContext();
 
   // Get the location they tried to visit before being redirected
-  const from = location.state?.from?.pathname || '/admin/dashboard';
+  const from = location.state?.from?.pathname || "/admin/dashboard";
 
   function onChange(value) {
-    console.log("Captcha value:", value);
+    // console.log("Captcha value:", value);
     setCaptchaToken(value);
     setCaptcha(!!value);
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
-    setMessageType('');
+    setMessage("");
+    setMessageType("");
 
     if (!captcha) {
       setMessageType("error");
@@ -65,28 +66,42 @@ const AdminLogin = () => {
       return;
     }
 
+    // const response = await axios
+    const adminData = {
+      email: email,
+      password: password,
+    };
+
+    const loginAPI = "https://mediconnect-pn3n.onrender.com/user/login";
+
     try {
       setLoginLoader(true);
-      
-      // const response = await axios
 
-      if (email === 'admin@ccc.akgec.live' && password === 'password') {
-        await login(email);
-        setMessageType("success");
-        setMessage("Login successful!");
-        
-        // Add a small delay to show success message
-        setTimeout(() => {
-          navigate(from, { replace: true });
-        }, 1000);
-      } else {
-        setMessageType("error");
-        setMessage("Invalid credentials");
+      const response = await axios.post(loginAPI, adminData);
+      if (response.status === 200) {
+        login(email);
+        navigate(from, { replace: true });
       }
+      setMessageType("success");
+      setMessage("Login successful!");
+
+      // if (email === "admin@ccc.akgec.live" && password === "password") {
+      //   await login(email);
+      //   setMessageType("success");
+      //   setMessage("Login successful!");
+
+      //   // Add a small delay to show success message
+      //   setTimeout(() => {
+      //     navigate(from, { replace: true });
+      //   }, 1000);
+      // } else {
+      //   setMessageType("error");
+      //   setMessage("Invalid credentials");
+      // }
     } catch (err) {
       setMessageType("error");
+      setMessageType("error");
       setMessage("An error occurred during login");
-      console.error("Login error:", err);
     } finally {
       setLoginLoader(false);
     }
@@ -94,9 +109,9 @@ const AdminLogin = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    const adminData = localStorage.getItem('adminData');
+    const adminData = localStorage.getItem("adminData");
     if (adminData) {
-      navigate('/admin/dashboard', { replace: true });
+      navigate("/admin/dashboard", { replace: true });
     }
   }, [navigate]);
 

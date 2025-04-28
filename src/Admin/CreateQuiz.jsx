@@ -197,7 +197,7 @@ const CreateQuiz = () => {
     // Add this function to help users format CSV correctly
     const downloadSampleCsv = () => {
       const sampleData = [
-        ['Question', 'Option 1', 'Option 2', 'Option 3', 'Option 4', 'Correct Answer (1-4)', 'Category', 'Difficulty'],
+        ['', '', '', '', '', '', '', ''],
         ['What is the capital of France?', 'Paris', 'London', 'Berlin', 'Madrid', '1', 'Geography', 'Easy'],
         ['Which planet is known as the Red Planet?', 'Venus', 'Mars', 'Jupiter', 'Saturn', '2', 'Science', 'Medium'],
       ].map(row => row.join(',')).join('\n');
