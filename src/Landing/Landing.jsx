@@ -17,12 +17,12 @@ const Landing = () => {
     e.preventDefault();
 
     if (!roomCode.trim()) {
-      console.error("Room code is required!");
+      // console.error("Room code is required!");
       return;
     }
 
     if (!siteData?.user || !tokens.accessToken) {
-      console.error("User information or authentication missing!");
+      // console.error("User information or authentication missing!");
       return;
     }
 
@@ -33,7 +33,7 @@ const Landing = () => {
       }));
       setHasSubmitted(true);
     } finally {
-      console.log("updated");
+      // console.log("updated");
     }
   };
 
@@ -44,7 +44,7 @@ const Landing = () => {
       siteData.code === roomCode &&
       siteData.user
     ) {
-      console.log("code:", siteData.code, "roomCode:", roomCode);
+      // console.log("code:", siteData.code, "roomCode:", roomCode);
       navigate(`/room/${roomCode}/${siteData.user}`);
     }
   }, [hasSubmitted, siteData.code, roomCode, siteData.user, navigate]);

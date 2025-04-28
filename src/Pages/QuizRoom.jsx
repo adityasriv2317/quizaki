@@ -18,7 +18,7 @@ const QuizRoom = () => {
 
   async function getQuizData(roomCode) {
     try {
-      console.log(tokens.accessToken);
+      // console.log(tokens.accessToken);
       const response = await axios.get(
         "https://ccc-quiz.onrender.com/admin/fetchQuiz?email=saurabhsri.mau@gmail.com"
       );
@@ -35,16 +35,16 @@ const QuizRoom = () => {
           countRef.current = timeLeft;
         }
       } else {
-        console.log(`No quiz found for room code: ${roomCode}`);
+        // console.log(`No quiz found for room code: ${roomCode}`);
         setData([]);
       }
     } catch (error) {
       if (error.response?.status === 401) {
         // Handle unauthorized access
-        console.error("Authentication error:", error);
+        // console.error("Authentication error:", error);
         navigate("/auth/login");
       } else {
-        console.error("Error fetching data:", error);
+        // console.error("Error fetching data:", error);
         setData([]);
       }
     }
