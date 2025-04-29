@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useWebData } from "../Security/WebData";
+import axios from "axios";
 
 const GoToTop = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -62,6 +63,23 @@ const Header = () => {
   const { siteData } = useWebData();
   const menuRef = useRef(null);
   const { userLogout } = useWebData();
+
+  const handleLogout = async () => {
+    try {
+      console.log("email: ", siteData.email);
+      const res = await axios.delete(
+        `https://ccc-quiz.onrender.com/player/LogOut?email=${siteData.email}`
+      );
+      userLogout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setProfileMenuMobile(false);
+      setIsMenuOpen(false);
+      setMenuSlide(false);
+      setProfileMenuDesktop(false);
+    }
+  };
 
   const menuClick = () => {
     if (isMenuOpen) {
@@ -174,7 +192,7 @@ const Header = () => {
           {profileMenuDesktop && (
             <div
               onClick={() => {
-                userLogout();
+                handleLogout();
                 setProfileMenuDesktop(false);
               }}
               className="absolute right-0 mt-2 w-48 bg-white text-black rounded-lg shadow-lg block px-4 py-2 cursor-pointer hover:bg-gray-100"
@@ -291,9 +309,8 @@ const Header = () => {
                 <div
                   className="block w-full mt-2 bg-white text-black rounded-lg shadow-lg px-4 py-2 hover:bg-gray-100 rounded-b-lg"
                   onClick={() => {
-                    userLogout();
+                    handleLogout();
                     closeMenu();
-                    setProfileMenuMobile(false);
                   }}
                 >
                   Logout

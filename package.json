@@ -24,6 +24,7 @@
     "react-google-recaptcha": "^3.1.0",
     "react-responsive": "^10.0.1",
     "react-router-dom": "^7.1.1",
+    "socket.io-client": "^4.8.1",
     "three": "^0.172.0"
   },
   "devDependencies": {

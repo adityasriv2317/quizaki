@@ -272,10 +272,10 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
     const userStatData = {
       uid: uid,
       quizId: code,
-      score: quizStats.totalScore,
-      streak: quizStats.streak || 0,
-      correctAnswers: quizStats.correctAnswers,
-      incorrectAnswers: quizStats.totalQuestions - quizStats.correctAnswers,
+      score: quizStats.totalScore+1,
+      streak: quizStats.streak+1 || 0,
+      correctAnswers: quizStats.correctAnswers+1,
+      incorrectAnswers: quizStats.totalQuestions - quizStats.correctAnswers+1,
       time: quizStats.averageTime,
     };
 
