@@ -743,58 +743,53 @@ const QuizPage = () => {
   };
 
   const handleOptionSelect = (option) => {
-    // No changes needed here based on the request, it locks immediately
-    if (quizState.isAnswerLocked || results.showResults) return; // Prevent selection if locked or quiz ended
-
-    const isCorrect = option === quizState.question?.correctAnswer;
-    const timeBonus = isCorrect ? Math.floor(quizState.countdown / 2) : 0;
-    const pointsEarned = isCorrect ? 100 + timeBonus : 0;
-    const newStreak = isCorrect ? quizState.streak + 1 : 0; // Calculate potential new streak
-
-    // Lock the answer immediately
-    setQuizState((prev) => ({
-      ...prev,
-      selectedOption: option,
-      isAnswerLocked: true, // Lock happens here
-    }));
-
-    // Update statistics immediately for final results
-    setStats((prev) => ({
-      ...prev,
-      actualScore: prev.actualScore + pointsEarned,
-      timeBonusTotal: prev.timeBonusTotal + timeBonus,
-      correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
-      // Ensure timeSpent length matches current question index before adding
-      timeSpent:
-        prev.timeSpent.length === quizState.currentQuestionIndex
-          ? [...prev.timeSpent, 30 - quizState.countdown]
-          : prev.timeSpent, // Avoid adding time twice if reset/reselect happens fast
-      answers: [
-        // Keep track of detailed answer info if needed
-        ...prev.answers,
-        {
-          /* ... answer details ... */
-        },
-      ],
-      finalStreak: newStreak, // Update final streak tracker
-    }));
-
-    // Update display score and streak for the UI *after* a delay (or upon moving to next question)
-    // Let's update the display streak immediately for feedback
-    setQuizState((prev) => ({
-      ...prev,
-      displayScore: prev.displayScore + pointsEarned, // Update display score immediately
-      streak: newStreak, // Update display streak immediately
-    }));
-
-    // Automatically move to the next question or end the quiz after a delay
-    // This replaces the need for the setTimeout in handleOptionSelect's previous logic
-    // and centralizes the next question logic in handleTimeUp
-    // We still need a delay before calling handleTimeUp to show feedback
-    setTimeout(() => {
-      handleTimeUp(); // handleTimeUp will now manage moving to next question or ending quiz
-    }, 1000); // Delay to show correctness/feedback before moving on
-  };
+      if (quizState.isAnswerLocked || results.showResults) return; // Prevent selection if locked or quiz ended
+  
+      const isCorrect = option === quizState.question?.correctAnswer;
+      const timeBonus = isCorrect ? Math.floor(quizState.countdown / 2) : 0;
+      const pointsEarned = isCorrect ? 100 + timeBonus : 0;
+      const newStreak = isCorrect ? quizState.streak + 1 : 0; // Calculate potential new streak
+  
+      // Lock the answer immediately
+      setQuizState((prev) => ({
+        ...prev,
+        selectedOption: option,
+        isAnswerLocked: true, // Lock happens here
+      }));
+  
+      // Update statistics immediately for final results
+      setStats((prev) => ({
+        ...prev,
+        actualScore: prev.actualScore + pointsEarned,
+        timeBonusTotal: prev.timeBonusTotal + timeBonus,
+        correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
+        // Ensure timeSpent length matches current question index before adding
+        timeSpent:
+          prev.timeSpent.length === quizState.currentQuestionIndex
+            ? [...prev.timeSpent, 30 - quizState.countdown]
+            : prev.timeSpent, // Avoid adding time twice if reset/reselect happens fast
+        answers: [
+          // Keep track of detailed answer info if needed
+          ...prev.answers,
+          {
+            /* ... answer details ... */
+          },
+        ],
+        finalStreak: newStreak, // Update final streak tracker
+      }));
+  
+      // Update display score and streak for the UI immediately
+      setQuizState((prev) => ({
+        ...prev,
+        displayScore: prev.displayScore + pointsEarned, // Update display score immediately
+        streak: newStreak, // Update display streak immediately
+      }));
+  
+      // REMOVE THIS SECTION - Don't automatically move to next question
+      // setTimeout(() => {
+      //   handleTimeUp(); // handleTimeUp will now manage moving to next question or ending quiz
+      // }, 1000); // Delay to show correctness/feedback before moving on
+    };
 
   if (results.showResults) {
     return (
