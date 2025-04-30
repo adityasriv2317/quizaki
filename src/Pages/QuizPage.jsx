@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useWebData } from "../Security/WebData";
 import CountdownTimer from "../assets/CountdownTimer";
 import { useMediaQuery } from "react-responsive";
-import { Lock } from "lucide-react";
+import { Lock, Expand, X } from "lucide-react";
 import Spinner from "../assets/Spinner";
 import axios from "axios";
 import { useQuiz } from "../Context/QuizContext";
@@ -87,13 +87,13 @@ const DesktopLayout = ({
                   </p>
                   {/* Reset Button - Show only when an option is selected and locked */}
                   {/* {selectedOption && isAnswerLocked && ( */}
-                    <button
-                      onClick={onResetSelection} // Use the passed handler
-                      className="bg-red-300 text-black/70 font-semibold px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
-                    >
-                      <FontAwesomeIcon icon={faUndo} className="mr-2" />
-                      Reset
-                    </button>
+                  <button
+                    onClick={onResetSelection} // Use the passed handler
+                    className="bg-red-300 text-black/70 font-semibold px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
+                  >
+                    <FontAwesomeIcon icon={faUndo} className="mr-2" />
+                    Reset
+                  </button>
                   {/* )} */}
                 </div>
                 <div className="grid grid-cols-1 gap-4 mx-auto max-w-[90%] md:max-w-[90%]">
@@ -199,13 +199,13 @@ const MobLayout = ({
           </p>
           {/* Reset Button - Show only when an option is selected and locked */}
           {/* {selectedOption && isAnswerLocked && ( */}
-            <button
-              onClick={onResetSelection} // Use the passed handler
-              className="px-3 py-1.5 bg-red-50 text-black/70 rounded-full transition-all hover:bg-red-100"
-            >
-              <FontAwesomeIcon icon={faUndo} className="mr-1" />
-              Reset
-            </button>
+          <button
+            onClick={onResetSelection} // Use the passed handler
+            className="px-3 py-1.5 bg-red-50 text-black/70 rounded-full transition-all hover:bg-red-100"
+          >
+            <FontAwesomeIcon icon={faUndo} className="mr-1" />
+            Reset
+          </button>
           {/* )} */}
         </div>
         {/* List of answer options */}
@@ -273,22 +273,26 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
   const [leaderboardError, setLeaderboardError] = useState(null);
 
-  // console.log(uid,code);
+  // State to manage leaderboard expansion
+  const [isLeaderboardExpanded, setIsLeaderboardExpanded] = useState(false);
 
   // Wrap the data fetching logic in useCallback
   const saveStatsAndFetchLeaderboard = useCallback(async () => {
     // Ensure uid and code are available
     if (!uid || !code) {
-        console.error("User ID or Quiz Code is missing.");
-        setLeaderboardError("Cannot load leaderboard: User or Quiz information missing.");
-        setLoadingLeaderboard(false);
-        return;
+      console.error("User ID or Quiz Code is missing.");
+      setLeaderboardError(
+        "Cannot load leaderboard: User or Quiz information missing."
+      );
+      setLoadingLeaderboard(false);
+      return;
     }
 
     const userStatData = {
       uid: uid,
       quizId: code,
       score: quizStats.totalScore,
+      // Ensure streak is included, defaulting to 0 if not present in quizStats
       streak: quizStats.streak || 0,
       correctAnswers: quizStats.correctAnswers,
       incorrectAnswers: quizStats.totalQuestions - quizStats.correctAnswers,
@@ -311,58 +315,61 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
         const saveResponse = await axios.post(saveAPI, userStatData);
         console.log("Stats saved successfully:", saveResponse.data);
       } catch (saveError) {
-         console.error("Error saving stats:", saveError);
-         // Decide if saving error should prevent leaderboard fetch or show a specific error
-         // For now, we'll log it and still attempt to fetch the leaderboard
+        console.error("Error saving stats:", saveError);
+        // Log and continue to fetch leaderboard
       }
 
-
       // Fetch leaderboard data
-      console.log("Fetching leaderboard from:", leaderboardAPI);
+      // console.log("Fetching leaderboard from:", leaderboardAPI);
       const leaderboardResponse = await axios.get(leaderboardAPI);
-      console.log("Leaderboard data received:", leaderboardResponse.data);
+      // console.log("Leaderboard data received:", leaderboardResponse.data);
 
-      // Ensure data is an array before setting state
-      const data = Array.isArray(leaderboardResponse.data) ? leaderboardResponse.data : [];
-      setLeaderboardData(data);
-
+      // Ensure data is an array and sort by score descending
+      const data = Array.isArray(leaderboardResponse.data)
+        ? leaderboardResponse.data
+        : [];
+      // Sort here to ensure consistent order
+      const sortedData = data.sort((a, b) => (b.score || 0) - (a.score || 0));
+      setLeaderboardData(sortedData);
     } catch (error) {
-      console.error("Error during leaderboard fetch:", error); // Changed log message
+      // console.error("Error during leaderboard fetch:", error);
       if (error.response) {
-        console.error("Error data:", error.response.data);
-        console.error("Error status:", error.response.status);
-        setLeaderboardError(`Failed to load leaderboard: Server responded with status ${error.response.status}`);
+        // console.error("Error data:", error.response.data);
+        // console.error("Error status:", error.response.status);
+        setLeaderboardError(
+          `Failed to load leaderboard: Server responded with status ${error.response.status}`
+        );
       } else if (error.request) {
-        console.error("Error request:", error.request);
-        setLeaderboardError("Failed to load leaderboard: No response from server.");
+        // console.error("Error request:", error.request);
+        setLeaderboardError(
+          "Failed to load leaderboard: No response from server."
+        );
       } else {
-        console.error("Error message:", error.message);
+        // console.error("Error message:", error.message);s
         setLeaderboardError(`Failed to load leaderboard: ${error.message}`);
       }
     } finally {
-       setLoadingLeaderboard(false); // Stop loading
+      setLoadingLeaderboard(false); // Stop loading
     }
   }, [quizStats, code, uid]); // Add dependencies for useCallback
-
 
   useEffect(() => {
     saveStatsAndFetchLeaderboard();
   }, [saveStatsAndFetchLeaderboard]); // Depend on the memoized function
 
   // Helper function to render leaderboard content based on state
-  const renderLeaderboardContent = () => {
+  const renderLeaderboardTable = (isExpandedView) => {
     if (loadingLeaderboard) {
-      return <Spinner />; // Show spinner while loading
+      return <Spinner />;
     }
 
     if (leaderboardError) {
-      // Show spinner and retry button on error
       return (
         <div className="text-center p-4">
-          <Spinner /> {/* Now Spinner is defined */}
-          <p className="text-red-600 my-2">Could not load leaderboard.</p> {/* Optional brief message */}
+          <Spinner />
+          <p className="text-red-600 my-2">Could not load leaderboard.</p>
           <button
-            onClick={saveStatsAndFetchLeaderboard} // Call the memoized function to retry
+            onClick={saveStatsAndFetchLeaderboard}
             className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
             aria-label="Retry fetching leaderboard"
           >
@@ -372,46 +379,67 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
       );
     }
 
-    if (leaderboardData.length > 0) {
+
+    const dataToShow = isExpandedView
+      ? leaderboardData
+      : leaderboardData.slice(0, 5);
+
+    if (dataToShow.length > 0) {
       return (
         <div className="leaderboard-table">
-          {/* Header */}
-          <div className="grid grid-cols-3 gap-2 font-semibold text-gray-700 border-b pb-2 mb-2 text-sm"> {/* Adjusted grid-cols */}
+          {/* Header - Apply text-center conditionally for expanded view */}
+          <div
+            // Apply sticky header styling consistently
+            className={`grid grid-cols-4 gap-2 font-semibold text-gray-700 border-b pb-2 mb-2 text-sm sticky top-0 bg-gray-100 z-10`}
+          >
             <span className="text-center">Rank</span>
-            <span>Player</span>
-            <span className="text-right">Score</span> {/* Adjusted alignment */}
+            {/* Center Player header only if expanded */}
+            <span className={isExpandedView ? "text-center" : ""}>Player</span>
+            {/* Center Score header only if expanded */}
+            <span className={isExpandedView ? "text-center" : "text-right"}>Score</span>
+            {/* Center Streak header only if expanded */}
+            <span className={isExpandedView ? "text-center" : "text-right"}>Streak</span>
           </div>
-          {/* Rows */}
-          {leaderboardData
-            // Sort by score descending if not already sorted by API
-            .sort((a, b) => (b.score || 0) - (a.score || 0))
-            .map((entry, index) => (
-              <div key={entry.uid || index} className="grid grid-cols-3 gap-2 py-1 text-gray-800 items-center text-sm"> {/* Adjusted grid-cols */}
-                <span className="text-center font-medium">{index + 1}</span>
-                {/* Adjust 'playerName' based on your API response */}
-                <span className="truncate">{entry.uid || 'Unknown'}</span> {/* Use uid, add truncate */}
-                <span className="text-right font-semibold">{entry.score}</span> {/* Adjusted alignment */}
-              </div>
-            ))}
+          {/* Rows - Apply text-center conditionally for expanded view */}
+          {dataToShow.map((entry, index) => (
+            <div
+              key={entry.uid || index}
+              className="grid grid-cols-4 gap-2 py-1 text-gray-800 items-center text-sm"
+            >
+              <span className="text-center font-medium">{index + 1}</span>
+              {/* Center Player name only if expanded */}
+              <span className={`truncate ${isExpandedView ? "text-center" : ""}`}>{entry.playerName || "Unknown"}</span>
+              {/* Center Score only if expanded */}
+              <span className={`font-semibold ${isExpandedView ? "text-center" : "text-right"}`}>{entry.score}</span>
+              {/* Center Streak only if expanded */}
+              <span className={`font-semibold ${isExpandedView ? "text-center" : "text-right"}`}>
+                {entry.streak || 0}
+              </span>
+            </div>
+          ))}
         </div>
       );
     }
 
-    // If not loading, no error, and no data
-    return <p className="text-center text-gray-600">No leaderboard data available.</p>;
+    return (
+      <p className="text-center text-gray-600">
+        No leaderboard data available.
+      </p>
+    );
   };
-
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#b74358] to-[#812939] p-4">
       <div className="w-full max-w-4xl mx-auto px-4">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-oxanium font-bold text-white mb-2">
+        <div className="text-center mb-4">
+          <h1 className="text-4xl md:text-5xl font-oxanium font-bold text-white">
             Quiz Complete!
           </h1>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8">
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 relative">
+          {" "}
+          {/* Added relative positioning */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
             {/* Score Card */}
             <div className="bg-gradient-to-r from-[#b74358] to-[#812939] rounded-xl p-6 text-white">
@@ -438,7 +466,6 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
               </div>
             </div>
           </div>
-
           {/* Detailed Stats */}
           <div className="bg-gray-50 rounded-xl p-2 mb-8">
             <div className="mx-auto">
@@ -452,19 +479,30 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
               </div> */}
             </div>
           </div>
-
-
           {/* Leaderboard Section */}
-          <div className="mt-8">
-            <h2 className="text-2xl font-oxanium font-bold text-center text-[#812939] mb-4">
-              Leaderboard
-            </h2>
+          <div className="mt-2">
+            {/* Header with Expand button */}
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-oxanium font-bold text-[#812939]">
+                Leaderboard (Top 5)
+              </h2>
+              {/* Show Expand button only if not expanded and data exists */}
+              {!isLeaderboardExpanded && leaderboardData.length > 5 && (
+                <button
+                  onClick={() => setIsLeaderboardExpanded(true)}
+                  className="text-[#812939] hover:text-[#b74358] transition-colors"
+                  aria-label="Expand Leaderboard"
+                >
+                  <Expand size={24} />
+                </button>
+              )}
+            </div>
+            {/* Compact Leaderboard View */}
             <div className="bg-gray-100 rounded-lg shadow p-4 max-h-60 overflow-y-auto">
-              {/* Use the helper function to render content */}
-              {renderLeaderboardContent()}
+              {/* Render top 5 */}
+              {renderLeaderboardTable(false)}
             </div>
           </div>
-
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <button
@@ -476,6 +514,32 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
           </div>
         </div>
       </div>
+
+      {/* Expanded Leaderboard Modal */}
+      {isLeaderboardExpanded && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-xl font-oxanium font-bold text-[#812939]">
+                Full Leaderboard
+              </h2>
+              <button
+                onClick={() => setIsLeaderboardExpanded(false)}
+                className="text-gray-500 hover:text-gray-800"
+                aria-label="Close Leaderboard"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            {/* Modal Body - Scrollable */}
+            <div className="p-4 overflow-y-auto flex-grow">
+              {/* Render full leaderboard */}
+              {renderLeaderboardTable(true)}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -565,20 +629,26 @@ const QuizPage = () => {
     while (completedTimeSpent.length < totalQuestions) {
       completedTimeSpent.push(30); // Add max time for unanswered questions
     }
-    const totalTime = completedTimeSpent.reduce((total, time) => total + time, 0);
-    const averageTime = totalQuestions > 0 ? Math.round(totalTime / totalQuestions) : 0;
+    const totalTime = completedTimeSpent.reduce(
+      (total, time) => total + time,
+      0
+    );
+    const averageTime =
+      totalQuestions > 0 ? Math.round(totalTime / totalQuestions) : 0;
 
     return {
       totalScore: stats.actualScore,
       timeBonus: stats.timeBonusTotal,
       correctAnswers: stats.correctCount,
       totalQuestions,
-      accuracy: totalQuestions > 0 ? Math.round((stats.correctCount / totalQuestions) * 100) : 0,
+      accuracy:
+        totalQuestions > 0
+          ? Math.round((stats.correctCount / totalQuestions) * 100)
+          : 0,
       averageTime: averageTime,
       streak: stats.finalStreak, // Use the final streak calculated
     };
   };
-
 
   const handleTimeUp = () => {
     if (!currentQuiz?.questions || results.showResults) return; // Prevent running if results are shown
@@ -591,18 +661,20 @@ const QuizPage = () => {
       setStats((prev) => ({
         ...prev,
         // Only add time if it hasn't been added by handleOptionSelect
-        timeSpent: prev.timeSpent.length === currentQuestionIndex ? [...prev.timeSpent, 30] : prev.timeSpent,
+        timeSpent:
+          prev.timeSpent.length === currentQuestionIndex
+            ? [...prev.timeSpent, 30]
+            : prev.timeSpent,
         // Reset streak if time runs out on an unanswered question
         finalStreak: 0, // Reset streak as the chain is broken
       }));
       // Update display streak immediately for UI consistency
-      setQuizState(prev => ({ ...prev, streak: 0 }));
+      setQuizState((prev) => ({ ...prev, streak: 0 }));
     } else {
-       // If an option was selected, the streak is handled in handleOptionSelect
-       // We just need to ensure finalStreak reflects the last known streak
-       setStats(prev => ({ ...prev, finalStreak: quizState.streak }));
+      // If an option was selected, the streak is handled in handleOptionSelect
+      // We just need to ensure finalStreak reflects the last known streak
+      setStats((prev) => ({ ...prev, finalStreak: quizState.streak }));
     }
-
 
     // Check if it's the last question
     if (currentQuestionIndex >= totalQuestions - 1) {
@@ -632,7 +704,6 @@ const QuizPage = () => {
       }, 500); // Delay before showing next question (adjust as needed)
     }
   };
-
 
   // Add this handler function
   const handleResetSelection = () => {
@@ -672,34 +743,36 @@ const QuizPage = () => {
       timeBonusTotal: prev.timeBonusTotal + timeBonus,
       correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
       // Ensure timeSpent length matches current question index before adding
-      timeSpent: prev.timeSpent.length === quizState.currentQuestionIndex
-                 ? [...prev.timeSpent, 30 - quizState.countdown]
-                 : prev.timeSpent, // Avoid adding time twice if reset/reselect happens fast
-      answers: [ // Keep track of detailed answer info if needed
+      timeSpent:
+        prev.timeSpent.length === quizState.currentQuestionIndex
+          ? [...prev.timeSpent, 30 - quizState.countdown]
+          : prev.timeSpent, // Avoid adding time twice if reset/reselect happens fast
+      answers: [
+        // Keep track of detailed answer info if needed
         ...prev.answers,
-        { /* ... answer details ... */ }
+        {
+          /* ... answer details ... */
+        },
       ],
       finalStreak: newStreak, // Update final streak tracker
     }));
 
     // Update display score and streak for the UI *after* a delay (or upon moving to next question)
     // Let's update the display streak immediately for feedback
-     setQuizState((prev) => ({
+    setQuizState((prev) => ({
       ...prev,
       displayScore: prev.displayScore + pointsEarned, // Update display score immediately
       streak: newStreak, // Update display streak immediately
     }));
-
 
     // Automatically move to the next question or end the quiz after a delay
     // This replaces the need for the setTimeout in handleOptionSelect's previous logic
     // and centralizes the next question logic in handleTimeUp
     // We still need a delay before calling handleTimeUp to show feedback
     setTimeout(() => {
-        handleTimeUp(); // handleTimeUp will now manage moving to next question or ending quiz
+      handleTimeUp(); // handleTimeUp will now manage moving to next question or ending quiz
     }, 1000); // Delay to show correctness/feedback before moving on
   };
-
 
   if (results.showResults) {
     return (
