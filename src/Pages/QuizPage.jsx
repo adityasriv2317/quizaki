@@ -533,7 +533,7 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
               </button>
             </div>
             {/* Modal Body - Scrollable */}
-            <div className="overflow-y-auto flex-grow">
+            <div className="pb-1 overflow-y-auto flex-grow">
               {/* Render full leaderboard */}
               {renderLeaderboardTable(true)}
             </div>
@@ -590,6 +590,37 @@ const QuizPage = () => {
   const currentQuiz = Array.isArray(quizData) ? quizData[0] : quizData;
   const isMobile = useMediaQuery({ maxWidth: 900 });
 
+  // Wrap calculateFinalStats in useCallback and define it earlier
+  const calculateFinalStats = useCallback(() => {
+    const totalQuestions = currentQuiz.questions.length;
+    // Ensure timeSpent has an entry for every question, even if unanswered
+    const completedTimeSpent = [...stats.timeSpent];
+    while (completedTimeSpent.length < totalQuestions) {
+      completedTimeSpent.push(30); // Add max time for unanswered questions
+    }
+    const totalTime = completedTimeSpent.reduce(
+      (total, time) => total + time,
+      0
+    );
+    const averageTime =
+      totalQuestions > 0 ? Math.round(totalTime / totalQuestions) : 0;
+
+    return {
+      totalScore: stats.actualScore,
+      timeBonus: stats.timeBonusTotal,
+      correctAnswers: stats.correctCount,
+      totalQuestions,
+      accuracy:
+        totalQuestions > 0
+          ? Math.round((stats.correctCount / totalQuestions) * 100)
+          : 0,
+      averageTime: averageTime,
+      streak: stats.finalStreak, // Use the final streak calculated
+    };
+    // Dependencies for useCallback: stats state and the number of questions
+  }, [stats, currentQuiz?.questions.length]);
+
+
   // Update question and progress
   useEffect(() => {
     if (!currentQuiz?.questions) return;
@@ -621,36 +652,26 @@ const QuizPage = () => {
     return () => clearInterval(timer);
   }, [quizState.currentQuestionIndex]);
 
-  // Add this function before handleTimeUp
-  const calculateFinalStats = () => {
-    const totalQuestions = currentQuiz.questions.length;
-    // Ensure timeSpent has an entry for every question, even if unanswered
-    const completedTimeSpent = [...stats.timeSpent];
-    while (completedTimeSpent.length < totalQuestions) {
-      completedTimeSpent.push(30); // Add max time for unanswered questions
+  // useEffect to calculate final stats *after* stats state updates and results are shown
+  useEffect(() => {
+    // Only calculate when results should be shown and stats have potentially updated
+    if (results.showResults) {
+      const finalStats = calculateFinalStats(); // Reads the latest 'stats' state
+      // Check if the calculated stats are different from the current ones to avoid infinite loops
+      // Using JSON.stringify for a simple deep comparison
+      if (JSON.stringify(finalStats) !== JSON.stringify(results.quizStats)) {
+        setResults(prevResults => ({
+          ...prevResults,
+          quizStats: finalStats,
+        }));
+      }
     }
-    const totalTime = completedTimeSpent.reduce(
-      (total, time) => total + time,
-      0
-    );
-    const averageTime =
-      totalQuestions > 0 ? Math.round(totalTime / totalQuestions) : 0;
+    // Dependency array includes 'stats' and 'results.showResults'
+    // and the memoized calculateFinalStats function
+  }, [stats, results.showResults, calculateFinalStats, results.quizStats]); // Added results.quizStats to deps
 
-    return {
-      totalScore: stats.actualScore,
-      timeBonus: stats.timeBonusTotal,
-      correctAnswers: stats.correctCount,
-      totalQuestions,
-      accuracy:
-        totalQuestions > 0
-          ? Math.round((stats.correctCount / totalQuestions) * 100)
-          : 0,
-      averageTime: averageTime,
-      streak: stats.finalStreak, // Use the final streak calculated
-    };
-  };
 
-  const handleTimeUp = () => {
+  const handleTimeUp = useCallback(() => { // Wrap in useCallback
     if (!currentQuiz?.questions || results.showResults) return; // Prevent running if results are shown
 
     const currentQuestionIndex = quizState.currentQuestionIndex;
@@ -678,15 +699,14 @@ const QuizPage = () => {
 
     // Check if it's the last question
     if (currentQuestionIndex >= totalQuestions - 1) {
-      // End of the quiz
-      // Use a slight delay to allow stats state to update before calculating final results
-      setTimeout(() => {
-        setResults((prevResults) => ({
-          ...prevResults,
-          showResults: true,
-          quizStats: calculateFinalStats(), // Calculate final stats *after* state updates
-        }));
-      }, 100); // Short delay
+      // End of the quiz - Just set showResults to true.
+      // The new useEffect hook will handle calculating and setting the final stats.
+      setResults((prevResults) => ({
+        ...prevResults,
+        showResults: true,
+        // quizStats will be updated by the useEffect now
+      }));
+      // Removed the setTimeout and calculateFinalStats call from here
     } else {
       // Move to the next question
       const nextIndex = currentQuestionIndex + 1;
@@ -703,7 +723,9 @@ const QuizPage = () => {
         }));
       }, 500); // Delay before showing next question (adjust as needed)
     }
-  };
+    // Add dependencies for useCallback
+  }, [currentQuiz?.questions, quizState.currentQuestionIndex, quizState.selectedOption, quizState.streak, results.showResults]);
+
 
   // Add this handler function
   const handleResetSelection = () => {
