@@ -533,7 +533,7 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
               </button>
             </div>
             {/* Modal Body - Scrollable */}
-            <div className="p-4 overflow-y-auto flex-grow">
+            <div className="overflow-y-auto flex-grow">
               {/* Render full leaderboard */}
               {renderLeaderboardTable(true)}
             </div>
