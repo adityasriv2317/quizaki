@@ -5,7 +5,7 @@ import p1 from "/imgs/p1.svg";
 import p2 from "/imgs/p2.svg";
 import p3 from "/imgs/p3.svg";
 import p4 from "/imgs/p4.svg";
-import p5 from "/imgs/p3.svg";
+import p5 from "/imgs/p5.svg";
 
 const Carousel = () => {
   const [activeIndex, setActiveIndex] = useState(2);
@@ -56,12 +56,12 @@ const Carousel = () => {
       {/* slider */}
       <div className="relative flex items-center justify-center mt-10 overflow-hidden py-4 px-10">
         {/* case */}
-        <img
+        {/* <img
           src={phone}
           className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-full ${
             visibleImages == 5 ? "scale-110" : "scale-90"
           } md:w-1/5 z-20`}
-        />
+        /> */}
         <div
           className="slider flex transition-transform duration-500 ease-in-out"
           style={{
@@ -77,7 +77,7 @@ const Carousel = () => {
                 index === activeIndex ? "scale-100 z-10" : "scale-75 opacity-50"
               }`}
             >
-              <img src={img} className="w-full rounded-lg" />
+              <img src={img} className="h-full w-full rounded-sm" />
             </div>
           ))}
         </div>

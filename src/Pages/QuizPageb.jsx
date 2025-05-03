@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWebData } from "../Security/WebData";
 import CountdownTimer from "../assets/CountdownTimer";
@@ -261,13 +261,12 @@ const MobLayout = ({
 };
 
 // Add this new component at the top with other layout components
-const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
+const ResultLayout = ({ quizStats, onHomeClick, userStreak }) => {
   const siteData = localStorage.getItem("siteData");
+  // Add null check for siteData before parsing
   const weUser = siteData ? JSON.parse(siteData) : {};
   const uid = weUser.uid;
   const code = weUser.code; // Assuming 'code' is the quizId
-
-  const invoked = useRef(false); // flag for useEffect
 
   // Add state for leaderboard
   const [leaderboardData, setLeaderboardData] = useState([]);
@@ -291,9 +290,8 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
     const userStatData = {
       uid: uid,
       quizId: code,
-      // score: quizStats.totalScore,
       score: quizStats.totalScore,
-      streak: globals.streak, // Use the streak from quizStats directly
+      streak: userStreak, // Use the streak from quizStats directly
       correctAnswers: quizStats.correctAnswers,
       incorrectAnswers: quizStats.totalQuestions - quizStats.correctAnswers,
       time: quizStats.averageTime,
@@ -348,13 +346,10 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
     } finally {
       setLoadingLeaderboard(false); // Stop loading
     }
-  }, [quizStats, code, uid]);
+  }, [quizStats, code, uid]); // Add dependencies for useCallback
 
   useEffect(() => {
-    if (!invoked.current) {
-      invoked.current = true;
-      saveStatsAndFetchLeaderboard();
-    }
+    saveStatsAndFetchLeaderboard();
   }, [saveStatsAndFetchLeaderboard]); // Depend on the memoized function
 
   // Helper function to render leaderboard content based on state
@@ -562,248 +557,129 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
 };
 
 const QuizPage = () => {
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { siteData } = useWebData();
-  const { updateQuizState } = useQuiz();
-  const [globalStreak, setGlobalStreak] = useState({
-    score: 0,
-    streak: 0,
-  });
+  const { quizState, updateQuizState, addAnswer } = useQuiz();
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
-  // Consolidated quiz state
-  const [quizState, setQuizState] = useState({
-    countdown: 30,
-    progress: 0,
-    currentQuestionIndex: 0,
-    isAnswerLocked: false,
-    selectedOption: null,
-    question: null,
-    displayScore: 0,
-    streak: 0,
-  });
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [isAnswerLocked, setIsAnswerLocked] = useState(false);
+  const [countdown, setCountdown] = useState(30);
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [quizComplete, setQuizComplete] = useState(false);
+  const [quizData, setQuizData] = useState(null);
 
-  // Statistics state
-  const [stats, setStats] = useState({
-    actualScore: 0,
-    timeBonusTotal: 0,
-    correctCount: 0,
-    timeSpent: [],
-    answers: [],
-  });
-
-  // Results state
-  const [results, setResults] = useState({
-    showResults: false,
-    quizStats: {
-      totalScore: 0,
-      timeBonus: 0,
-      correctAnswers: 0,
-      totalQuestions: 0,
-      accuracy: 0,
-      averageTime: 0,
-    },
-  });
-
-  const quizData = location.state?.quizData;
-  const currentQuiz = Array.isArray(quizData) ? quizData[0] : quizData;
-  const isMobile = useMediaQuery({ maxWidth: 900 });
-
-  // Update question and progress
   useEffect(() => {
-    if (!currentQuiz?.questions) return;
+    if (!location.state?.quizData) {
+      navigate("/");
+      return;
+    }
+    setQuizData(location.state.quizData);
+  }, [location.state, navigate]);
 
-    const currentQuestion =
-      currentQuiz.questions[quizState.currentQuestionIndex];
-    setQuizState((prev) => ({
-      ...prev,
-      question: currentQuestion,
-      progress:
-        ((quizState.currentQuestionIndex + 1) / currentQuiz.questions.length) *
-        100,
-    }));
-  }, [currentQuiz, quizState.currentQuestionIndex]);
-
-  // Timer effect
   useEffect(() => {
-    const timer = setInterval(() => {
-      setQuizState((prev) => {
-        if (prev.countdown <= 1) {
-          clearInterval(timer); // Clear interval before handling time up
-          handleTimeUp();
-          return { ...prev, countdown: 30 };
-        }
-        return { ...prev, countdown: prev.countdown - 1 };
-      });
-    }, 1000);
+    if (selectedOption && !isAnswerLocked) {
+      setIsAnswerLocked(true);
+      const currentQuestion = quizData?.questions[currentQuestionIndex];
+      const isCorrect = selectedOption === currentQuestion?.correctAnswer;
+      
+      // Calculate points based on time left and correctness
+      const timeBonus = Math.floor(countdown / 2);
+      const points = isCorrect ? 10 + timeBonus : 0;
+      
+      // Update streak
+      if (isCorrect) {
+        setStreak(prev => prev + 1);
+      } else {
+        setStreak(0);
+      }
 
-    return () => clearInterval(timer);
-  }, [quizState.currentQuestionIndex]);
+      // Add answer to quiz state
+      addAnswer({
+        questionId: currentQuestion?.quesKey,
+        selectedAnswer: selectedOption,
+        isCorrect,
+        timeLeft: countdown,
+        timeBonus
+      }, points);
 
-  // Add this function before handleTimeUp
-  const calculateFinalStats = () => {
-    const totalQuestions = currentQuiz.questions.length;
-    const finalScore = stats.actualScore;
-
-    return {
-      totalScore: finalScore,
-      timeBonus: stats.timeBonusTotal,
-      correctAnswers: stats.correctCount,
-      totalQuestions,
-      accuracy: Math.round((stats.correctCount / totalQuestions) * 100),
-      averageTime: Math.round(
-        stats.timeSpent.reduce((total, time) => total + time, 0) /
-          totalQuestions
-      ),
-    };
-  };
-
-  const handleTimeUp = () => {
-    if (!currentQuiz?.questions) return;
-
-    if (!quizState.selectedOption) {
-      setStats((prev) => ({
-        ...prev,
-        timeSpent: [...prev.timeSpent, 30],
-      }));
+      setScore(prev => prev + points);
     }
+  }, [selectedOption, isAnswerLocked]);
 
-    if (quizState.currentQuestionIndex < currentQuiz.questions.length - 1) {
-      const nextIndex = quizState.currentQuestionIndex + 1;
-      setTimeout(() => {
-        setQuizState((prev) => ({
-          ...prev,
-          currentQuestionIndex: nextIndex,
-          selectedOption: null,
-          isAnswerLocked: false,
-          countdown: 30,
-        }));
-      }, 1000);
-    } else {
-      // Calculate final stats including the last question
-      const lastAnswer = stats.answers[stats.answers.length - 1];
-      const totalQuestions = currentQuiz.questions.length;
-
-      // setGlobalStreak((prev) => {
-      //   const newStreak = lastAnswer?.isCorrect? prev + 1 : 0;
-      //   return newStreak;
-      // });
-      setResults({
-        showResults: true,
-        quizStats: {
-          totalScore: stats.actualScore + (lastAnswer?.questionScore || 0),
-          timeBonus: stats.timeBonusTotal + (lastAnswer?.timeBonus || 0),
-          correctAnswers: stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0),
-          totalQuestions,
-          accuracy: Math.round(
-            ((stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0)) /
-              totalQuestions) *
-              100
-          ),
-          averageTime: Math.round(
-            stats.timeSpent.reduce((total, time) => total + time, 0) /
-              totalQuestions
-          ),
-        },
-      });
+  const onTimeUp = () => {
+    if (!selectedOption) {
+      setSelectedOption(null);
+      setStreak(0);
     }
-  };
-
-  // Add this handler function
-  const handleResetSelection = () => {
-    if (quizState.isAnswerLocked) {
-      // Only allow reset if an answer was locked by selection
-      setQuizState((prev) => ({
-        ...prev,
-        selectedOption: null,
-        isAnswerLocked: false, // Unlock to allow re-selection
-      }));
-    }
-  };
-
-  const handleOptionSelect = (option) => {
-    // No changes needed here based on the request, it locks immediately
-    if (quizState.isAnswerLocked) return;
-
-    const isCorrect = option === quizState.question?.correctAnswer;
-    const timeBonus = isCorrect ? Math.floor(quizState.countdown / 2) : 0;
-    const pointsEarned = isCorrect ? 100 + timeBonus : 0;
-    const newStreak = isCorrect ? quizState.streak + 1 : 0;
-
-    setQuizState((prev) => ({
-      ...prev,
-      selectedOption: option,
-      isAnswerLocked: true, // Lock happens here
-    }));
-
-    // Update statistics immediately for final results
-    setStats((prev) => ({
-      ...prev,
-      actualScore: prev.actualScore + pointsEarned,
-      timeBonusTotal: prev.timeBonusTotal + timeBonus,
-      correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
-      timeSpent: [...prev.timeSpent, 30 - quizState.countdown],
-      answers: [
-        ...prev.answers,
-        {
-          quesKey: quizState.currentQuestionIndex,
-          selectedAnswer: option,
-          correctAnswer: quizState.question?.correctAnswer,
-          isCorrect,
-          timeLeft: quizState.countdown,
-          questionScore: pointsEarned,
-          timeBonus,
-          streak: newStreak,
-        },
-      ],
-    }));
-    setGlobalStreak({
-      score: stats.actualScore,
-      streak: newStreak,
-    });
-
-    // Delay display score and streak update until next question
+    
+    // Move to next question after timer completes
     setTimeout(() => {
-      setQuizState((prev) => ({
-        ...prev,
-        displayScore: prev.displayScore + pointsEarned,
-        streak: newStreak,
-      }));
-    }, quizState.countdown * 1000);
+      if (currentQuestionIndex < (quizData?.questions?.length || 0) - 1) {
+        setCurrentQuestionIndex(prev => prev + 1);
+        setSelectedOption(null);
+        setIsAnswerLocked(false);
+        setCountdown(30); // Reset timer for next question
+      } else {
+        // Quiz complete
+        const accuracy = (quizState.correctAnswers / quizData.questions.length) * 100;
+        updateQuizState({
+          totalQuestions: quizData.questions.length,
+          quizTitle: quizData.quizTitle,
+          accuracy: Math.round(accuracy),
+          timeBonus: quizState.timeBonus,
+          totalScore: score
+        });
+        setQuizComplete(true);
+      }
+    }, 1500);
   };
 
-  if (results.showResults) {
-    return (
-      <ResultLayout
-        quizStats={results.quizStats}
-        onHomeClick={() => navigate("/")}
-        globals={globalStreak}
-      />
-    );
+  const onResetSelection = () => {
+    if (isAnswerLocked) {
+      setSelectedOption(null);
+      setIsAnswerLocked(false);
+    }
+  };
+
+  if (quizComplete) {
+    return <ResultLayout quizStats={quizState} onHomeClick={() => navigate("/")} userStreak={streak} />;
   }
 
-  const layoutProps = {
-    siteData,
-    progress: quizState.progress,
-    question: quizState.question,
-    isAnswerLocked: quizState.isAnswerLocked,
-    selectedOption: quizState.selectedOption,
-    setSelectedOption: handleOptionSelect, // This locks the answer
-    onResetSelection: handleResetSelection, // Pass the new handler
-    countdown: quizState.countdown,
-    setIsAnswerLocked: (
-      value // This might not be needed if locking is handled internally
-    ) => setQuizState((prev) => ({ ...prev, isAnswerLocked: value })),
-    onTimeUp: handleTimeUp,
-    score: quizState.displayScore,
-    currentQuestionIndex: quizState.currentQuestionIndex,
-    streak: quizState.streak,
-  };
+  const currentQuestion = quizData?.questions[currentQuestionIndex];
+  const progress = ((currentQuestionIndex + 1) / (quizData?.questions?.length || 1)) * 100;
 
   return isMobile ? (
-    <MobLayout {...layoutProps} />
+    <MobLayout
+      progress={progress}
+      question={currentQuestion}
+      selectedOption={selectedOption}
+      setSelectedOption={setSelectedOption}
+      isAnswerLocked={isAnswerLocked}
+      setIsAnswerLocked={setIsAnswerLocked}
+      onResetSelection={onResetSelection}
+      onTimeUp={onTimeUp}
+      countdown={countdown}
+      score={score}
+      currentQuestionIndex={currentQuestionIndex}
+    />
   ) : (
-    <DesktopLayout {...layoutProps} />
+    <DesktopLayout
+      siteData={siteData}
+      progress={progress}
+      question={currentQuestion}
+      selectedOption={selectedOption}
+      isAnswerLocked={isAnswerLocked}
+      setSelectedOption={setSelectedOption}
+      onResetSelection={onResetSelection}
+      onTimeUp={onTimeUp}
+      countdown={countdown}
+      score={score}
+      streak={streak}
+    />
   );
 };
 
