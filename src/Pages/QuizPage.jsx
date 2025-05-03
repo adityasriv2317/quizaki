@@ -261,7 +261,7 @@ const MobLayout = ({
 };
 
 // Add this new component at the top with other layout components
-const ResultLayout = ({ quizStats, onHomeClick }) => {
+const ResultLayout = ({ quizStats, onHomeClick, userStreak }) => {
   const siteData = localStorage.getItem("siteData");
   // Add null check for siteData before parsing
   const weUser = siteData ? JSON.parse(siteData) : {};
@@ -278,7 +278,6 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
 
   // Wrap the data fetching logic in useCallback
   const saveStatsAndFetchLeaderboard = useCallback(async () => {
-    // Ensure uid and code are available
     if (!uid || !code) {
       console.error("User ID or Quiz Code is missing.");
       setLeaderboardError(
@@ -292,14 +291,13 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
       uid: uid,
       quizId: code,
       score: quizStats.totalScore,
-      // Ensure streak is included, defaulting to 0 if not present in quizStats
-      streak: quizStats.streak || 0,
+      streak: userStreak, // Use the streak from quizStats directly
       correctAnswers: quizStats.correctAnswers,
       incorrectAnswers: quizStats.totalQuestions - quizStats.correctAnswers,
       time: quizStats.averageTime,
     };
 
-    console.log("Submitting user stats:", userStatData);
+    console.log("Submitting user stats with streak:", userStatData);
 
     const saveAPI = "https://ccc-quiz.onrender.com/player/SavePlayer";
     const leaderboardAPI = `https://ccc-quiz.onrender.com/player/leaderboard/${code}`;
@@ -307,11 +305,8 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
     setLoadingLeaderboard(true); // Start loading before fetch
     setLeaderboardError(null); // Reset error
     try {
-      // Save player stats (consider if this should be retried as well)
-      // For now, we only retry the leaderboard fetch part if it fails initially
-      // If save fails, leaderboard fetch might not proceed in the first run.
-      // Let's attempt save first, then fetch leaderboard. If fetch fails, retry only fetch.
       try {
+        console.log("Sending stats to:", saveAPI);
         const saveResponse = await axios.post(saveAPI, userStatData);
         console.log("Stats saved successfully:", saveResponse.data);
       } catch (saveError) {
@@ -320,7 +315,7 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
       }
 
       // Fetch leaderboard data
-      // console.log("Fetching leaderboard from:", leaderboardAPI);
+      console.log("Fetching leaderboard from:", leaderboardAPI);
       const leaderboardResponse = await axios.get(leaderboardAPI);
       // console.log("Leaderboard data received:", leaderboardResponse.data);
 
@@ -379,7 +374,6 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
       );
     }
 
-
     const dataToShow = isExpandedView
       ? leaderboardData
       : leaderboardData.slice(0, 5);
@@ -396,9 +390,13 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
             {/* Center Player header only if expanded */}
             <span className={isExpandedView ? "text-center" : ""}>Player</span>
             {/* Center Score header only if expanded */}
-            <span className={isExpandedView ? "text-center" : "text-right"}>Score</span>
+            <span className={isExpandedView ? "text-center" : "text-right"}>
+              Score
+            </span>
             {/* Center Streak header only if expanded */}
-            <span className={isExpandedView ? "text-center" : "text-right"}>Streak</span>
+            <span className={isExpandedView ? "text-center" : "text-right"}>
+              Streak
+            </span>
           </div>
           {/* Rows - Apply text-center conditionally for expanded view */}
           {dataToShow.map((entry, index) => (
@@ -408,11 +406,25 @@ const ResultLayout = ({ quizStats, onHomeClick }) => {
             >
               <span className="text-center font-medium">{index + 1}</span>
               {/* Center Player name only if expanded */}
-              <span className={`truncate ${isExpandedView ? "text-center" : ""}`}>{entry.playerName || "Unknown"}</span>
+              <span
+                className={`truncate ${isExpandedView ? "text-center" : ""}`}
+              >
+                {entry.playerName || "Unknown"}
+              </span>
               {/* Center Score only if expanded */}
-              <span className={`font-semibold ${isExpandedView ? "text-center" : "text-right"}`}>{entry.score}</span>
+              <span
+                className={`font-semibold ${
+                  isExpandedView ? "text-center" : "text-right"
+                }`}
+              >
+                {entry.score}
+              </span>
               {/* Center Streak only if expanded */}
-              <span className={`font-semibold ${isExpandedView ? "text-center" : "text-right"}`}>
+              <span
+                className={`font-semibold ${
+                  isExpandedView ? "text-center" : "text-right"
+                }`}
+              >
                 {entry.streak || 0}
               </span>
             </div>
@@ -550,6 +562,17 @@ const QuizPage = () => {
   const { siteData } = useWebData();
   const { updateQuizState } = useQuiz();
 
+  const [globalStreak, setGlobalStreak] = useState(() => {
+    // Initialize with any existing streak from local storage or start at 0
+    const savedStreak = localStorage.getItem("quizStreak");
+    return savedStreak ? parseInt(savedStreak, 10) : 0;
+  });
+
+  // Update local storage whenever streak changes
+  useEffect(() => {
+    localStorage.setItem("quizStreak", globalStreak.toString());
+  }, [globalStreak]);
+
   // Consolidated quiz state
   const [quizState, setQuizState] = useState({
     countdown: 30,
@@ -560,6 +583,7 @@ const QuizPage = () => {
     question: null,
     displayScore: 0,
     streak: 0,
+    userStreak: 0,
   });
 
   // Statistics state
@@ -582,7 +606,7 @@ const QuizPage = () => {
       totalQuestions: 0,
       accuracy: 0,
       averageTime: 0,
-      streak: 0, // Add streak to final stats
+      streak: 0,
     },
   });
 
@@ -619,7 +643,6 @@ const QuizPage = () => {
     };
     // Dependencies for useCallback: stats state and the number of questions
   }, [stats, currentQuiz?.questions.length]);
-
 
   // Update question and progress
   useEffect(() => {
@@ -658,74 +681,83 @@ const QuizPage = () => {
     if (results.showResults) {
       const finalStats = calculateFinalStats(); // Reads the latest 'stats' state
       // Check if the calculated stats are different from the current ones to avoid infinite loops
-      // Using JSON.stringify for a simple deep comparison
       if (JSON.stringify(finalStats) !== JSON.stringify(results.quizStats)) {
-        setResults(prevResults => ({
+        setResults((prevResults) => ({
           ...prevResults,
           quizStats: finalStats,
         }));
       }
     }
-    // Dependency array includes 'stats' and 'results.showResults'
-    // and the memoized calculateFinalStats function
-  }, [stats, results.showResults, calculateFinalStats, results.quizStats]); // Added results.quizStats to deps
+    // Dependency array
+  }, [stats, results.showResults, calculateFinalStats, results.quizStats]);
 
-
-  const handleTimeUp = useCallback(() => { // Wrap in useCallback
-    if (!currentQuiz?.questions || results.showResults) return; // Prevent running if results are shown
+  const handleTimeUp = useCallback(() => {
+    if (!currentQuiz?.questions || results.showResults) return;
 
     const currentQuestionIndex = quizState.currentQuestionIndex;
     const totalQuestions = currentQuiz.questions.length;
+    const isLastQuestion = currentQuestionIndex >= totalQuestions - 1;
+    const currentQuestion = currentQuiz.questions[currentQuestionIndex];
+    const isCorrect =
+      quizState.selectedOption === currentQuestion.correctAnswer;
 
-    // Record time spent for the current question if no option was selected
-    if (!quizState.selectedOption) {
-      setStats((prev) => ({
-        ...prev,
-        // Only add time if it hasn't been added by handleOptionSelect
-        timeSpent:
-          prev.timeSpent.length === currentQuestionIndex
-            ? [...prev.timeSpent, 30]
-            : prev.timeSpent,
-        // Reset streak if time runs out on an unanswered question
-        finalStreak: 0, // Reset streak as the chain is broken
-      }));
-      // Update display streak immediately for UI consistency
-      setQuizState((prev) => ({ ...prev, streak: 0 }));
-    } else {
-      // If an option was selected, the streak is handled in handleOptionSelect
-      // We just need to ensure finalStreak reflects the last known streak
-      setStats((prev) => ({ ...prev, finalStreak: quizState.streak }));
-    }
+    // Update streak based on current answer
+    const newStreak = isCorrect ? quizState.streak + 1 : 0;
 
-    // Check if it's the last question
-    if (currentQuestionIndex >= totalQuestions - 1) {
-      // End of the quiz - Just set showResults to true.
-      // The new useEffect hook will handle calculating and setting the final stats.
-      setResults((prevResults) => ({
-        ...prevResults,
+    // Update stats immediately
+    setStats((prev) => ({
+      ...prev,
+      correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
+      actualScore: isCorrect ? prev.actualScore + 10 : prev.actualScore,
+      finalStreak: newStreak, // Update finalStreak with new value
+      timeSpent: [...prev.timeSpent, 30 - quizState.countdown],
+    }));
+
+    // Update streak in quizState
+    setQuizState((prev) => ({
+      ...prev,
+      streak: newStreak,
+    }));
+    setGlobalStreak(quizState.streak);
+    console.log("u1", globalStreak);
+
+    if (isLastQuestion) {
+      // Calculate final stats including the last question's result
+      const finalStats = {
+        totalScore:
+          stats.actualScore + (isCorrect ? 10 : 0) + stats.timeBonusTotal,
+        timeBonus: stats.timeBonusTotal,
+        correctAnswers: stats.correctCount + (isCorrect ? 1 : 0),
+        totalQuestions,
+        accuracy: Math.round(
+          ((stats.correctCount + (isCorrect ? 1 : 0)) / totalQuestions) * 100
+        ),
+        averageTime: Math.round(
+          [...stats.timeSpent, 30 - quizState.countdown].reduce(
+            (a, b) => a + b,
+            0
+          ) / totalQuestions
+        ),
+        streak: newStreak, // Use the newly calculated streak
+      };
+
+      setResults({
         showResults: true,
-        // quizStats will be updated by the useEffect now
-      }));
-      // Removed the setTimeout and calculateFinalStats call from here
+        quizStats: finalStats,
+      });
     } else {
-      // Move to the next question
-      const nextIndex = currentQuestionIndex + 1;
-      // Use setTimeout to allow seeing the locked answer briefly (optional)
-      // Or remove setTimeout if immediate transition is preferred
+      // Move to next question after a short delay
       setTimeout(() => {
         setQuizState((prev) => ({
           ...prev,
-          currentQuestionIndex: nextIndex,
+          currentQuestionIndex: prev.currentQuestionIndex + 1,
           selectedOption: null,
           isAnswerLocked: false,
-          countdown: 30, // Reset countdown for the next question
-          // displayScore and streak are updated via handleOptionSelect's delayed update
+          countdown: 30,
         }));
-      }, 500); // Delay before showing next question (adjust as needed)
+      }, 500);
     }
-    // Add dependencies for useCallback
-  }, [currentQuiz?.questions, quizState.currentQuestionIndex, quizState.selectedOption, quizState.streak, results.showResults]);
-
+  }, [currentQuiz?.questions, quizState, stats, results.showResults]);
 
   // Add this handler function
   const handleResetSelection = () => {
@@ -736,67 +768,60 @@ const QuizPage = () => {
         selectedOption: null,
         isAnswerLocked: false, // Unlock to allow re-selection
       }));
-      // Note: We don't revert score/stats here as they are updated upon selection lock.
-      // If the user re-selects, handleOptionSelect will run again.
-      // If they don't re-select before time runs out, handleTimeUp will proceed without a selected option.
     }
   };
 
   const handleOptionSelect = (option) => {
-      if (quizState.isAnswerLocked || results.showResults) return; // Prevent selection if locked or quiz ended
-  
-      const isCorrect = option === quizState.question?.correctAnswer;
-      const timeBonus = isCorrect ? Math.floor(quizState.countdown / 2) : 0;
-      const pointsEarned = isCorrect ? 100 + timeBonus : 0;
-      const newStreak = isCorrect ? quizState.streak + 1 : 0; // Calculate potential new streak
-  
-      // Lock the answer immediately
-      setQuizState((prev) => ({
-        ...prev,
-        selectedOption: option,
-        isAnswerLocked: true, // Lock happens here
-      }));
-  
-      // Update statistics immediately for final results
-      setStats((prev) => ({
-        ...prev,
-        actualScore: prev.actualScore + pointsEarned,
-        timeBonusTotal: prev.timeBonusTotal + timeBonus,
-        correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
-        // Ensure timeSpent length matches current question index before adding
-        timeSpent:
-          prev.timeSpent.length === quizState.currentQuestionIndex
-            ? [...prev.timeSpent, 30 - quizState.countdown]
-            : prev.timeSpent, // Avoid adding time twice if reset/reselect happens fast
-        answers: [
-          // Keep track of detailed answer info if needed
-          ...prev.answers,
-          {
-            /* ... answer details ... */
-          },
-        ],
-        finalStreak: newStreak, // Update final streak tracker
-      }));
-  
-      // Update display score and streak for the UI immediately
-      setQuizState((prev) => ({
-        ...prev,
-        displayScore: prev.displayScore + pointsEarned, // Update display score immediately
-        streak: newStreak, // Update display streak immediately
-      }));
-  
-      // REMOVE THIS SECTION - Don't automatically move to next question
-      // setTimeout(() => {
-      //   handleTimeUp(); // handleTimeUp will now manage moving to next question or ending quiz
-      // }, 1000); // Delay to show correctness/feedback before moving on
-    };
+    if (quizState.isAnswerLocked || results.showResults) return; // Prevent selection if locked or quiz ended
+
+    const isCorrect = option === quizState.question?.correctAnswer;
+    const timeBonus = isCorrect ? Math.floor(quizState.countdown / 2) : 0;
+    const pointsEarned = isCorrect ? 100 + timeBonus : 0;
+    const newStreak = isCorrect ? quizState.streak + 1 : 0; // Calculate potential new streak
+
+    // Lock the answer immediately
+    setQuizState((prev) => ({
+      ...prev,
+      selectedOption: option,
+      isAnswerLocked: true, // Lock happens here
+    }));
+
+    // Update statistics immediately for final results
+    // globalStreak = newStreak, // Update global streak tracker
+    setStats((prev) => ({
+      ...prev,
+      actualScore: prev.actualScore + pointsEarned,
+      timeBonusTotal: prev.timeBonusTotal + timeBonus,
+      correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
+      // Ensure timeSpent length matches current question index before adding
+      timeSpent:
+        prev.timeSpent.length === quizState.currentQuestionIndex
+          ? [...prev.timeSpent, 30 - quizState.countdown]
+          : prev.timeSpent, // Avoid adding time twice if reset/reselect happens fast
+      answers: [
+        // Keep track of detailed answer info if needed
+        ...prev.answers,
+        {},
+      ],
+      finalStreak: newStreak, // Update final streak tracker
+    }));
+
+    // Update display score and streak for the UI immediately
+    setQuizState((prev) => ({
+      ...prev,
+      displayScore: prev.displayScore + pointsEarned, // Update display score immediately
+      streak: newStreak, // Update display streak immediately
+    }));
+  };
 
   if (results.showResults) {
+    console.log("Results:", results.quizStats);
+    console.log("Streak:", globalStreak);
     return (
       <ResultLayout
         quizStats={results.quizStats}
         onHomeClick={() => navigate("/")}
-        // quizId={code} // Pass quizId if needed and not derived from localStorage in ResultLayout
+        userStreak={globalStreak}
       />
     );
   }
@@ -810,7 +835,6 @@ const QuizPage = () => {
     setSelectedOption: handleOptionSelect, // This locks the answer
     onResetSelection: handleResetSelection, // Pass the new handler
     countdown: quizState.countdown,
-    // setIsAnswerLocked is likely not needed externally anymore
     onTimeUp: handleTimeUp, // handleTimeUp handles timeout logic
     score: quizState.displayScore, // Use displayScore for UI
     currentQuestionIndex: quizState.currentQuestionIndex,

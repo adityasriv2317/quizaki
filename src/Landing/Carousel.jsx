@@ -5,7 +5,7 @@ import p1 from "/imgs/p1.svg";
 import p2 from "/imgs/p2.svg";
 import p3 from "/imgs/p3.svg";
 import p4 from "/imgs/p4.svg";
-import p5 from "/imgs/p3.svg";
+import p5 from "/imgs/p5.svg";
 
 const Carousel = () => {
   const [activeIndex, setActiveIndex] = useState(2);
@@ -77,7 +77,7 @@ const Carousel = () => {
                 index === activeIndex ? "scale-100 z-10" : "scale-75 opacity-50"
               }`}
             >
-              <img src={img} className="w-full rounded-lg" />
+              <img src={img} className="h-full w-full rounded-sm" />
             </div>
           ))}
         </div>
