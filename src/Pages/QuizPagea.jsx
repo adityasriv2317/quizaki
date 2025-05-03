@@ -87,13 +87,13 @@ const DesktopLayout = ({
                   </p>
                   {/* Reset Button - Show only when an option is selected and locked */}
                   {/* {selectedOption && isAnswerLocked && ( */}
-                    <button
-                      onClick={onResetSelection} // Use the passed handler
-                      className="bg-red-300 text-black/70 font-semibold px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
-                    >
-                      <FontAwesomeIcon icon={faUndo} className="mr-2" />
-                      Reset
-                    </button>
+                  <button
+                    onClick={onResetSelection} // Use the passed handler
+                    className="bg-red-300 text-black/70 font-semibold px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
+                  >
+                    <FontAwesomeIcon icon={faUndo} className="mr-2" />
+                    Reset
+                  </button>
                   {/* )} */}
                 </div>
                 <div className="grid grid-cols-1 gap-4 mx-auto max-w-[90%] md:max-w-[90%]">
@@ -199,13 +199,13 @@ const MobLayout = ({
           </p>
           {/* Reset Button - Show only when an option is selected and locked */}
           {/* {selectedOption && isAnswerLocked && ( */}
-            <button
-              onClick={onResetSelection} // Use the passed handler
-              className="px-3 py-1.5 bg-red-50 text-black/70 rounded-full transition-all hover:bg-red-100"
-            >
-              <FontAwesomeIcon icon={faUndo} className="mr-1" />
-              Reset
-            </button>
+          <button
+            onClick={onResetSelection} // Use the passed handler
+            className="px-3 py-1.5 bg-red-50 text-black/70 rounded-full transition-all hover:bg-red-100"
+          >
+            <FontAwesomeIcon icon={faUndo} className="mr-1" />
+            Reset
+          </button>
           {/* )} */}
         </div>
         {/* List of answer options */}
@@ -562,6 +562,17 @@ const QuizPage = () => {
   const { siteData } = useWebData();
   const { updateQuizState } = useQuiz();
 
+  const [globalStreak, setGlobalStreak] = useState(() => {
+    // Initialize with any existing streak from local storage or start at 0
+    const savedStreak = localStorage.getItem("quizStreak");
+    return savedStreak ? parseInt(savedStreak, 10) : 0;
+  });
+
+  // Update local storage whenever streak changes
+  useEffect(() => {
+    localStorage.setItem("quizStreak", globalStreak.toString());
+  }, [globalStreak]);
+
   // Consolidated quiz state
   const [quizState, setQuizState] = useState({
     countdown: 30,
@@ -572,6 +583,7 @@ const QuizPage = () => {
     question: null,
     displayScore: 0,
     streak: 0,
+    userStreak: 0,
   });
 
   // Statistics state
@@ -580,7 +592,8 @@ const QuizPage = () => {
     timeBonusTotal: 0,
     correctCount: 0,
     timeSpent: [],
-    answers: [],
+    answers: [], // Keep track of answers per question
+    finalStreak: 0, // Add state to track the final streak
   });
 
   // Results state
@@ -593,12 +606,43 @@ const QuizPage = () => {
       totalQuestions: 0,
       accuracy: 0,
       averageTime: 0,
+      streak: 0,
     },
   });
 
   const quizData = location.state?.quizData;
   const currentQuiz = Array.isArray(quizData) ? quizData[0] : quizData;
   const isMobile = useMediaQuery({ maxWidth: 900 });
+
+  // Wrap calculateFinalStats in useCallback and define it earlier
+  const calculateFinalStats = useCallback(() => {
+    const totalQuestions = currentQuiz.questions.length;
+    // Ensure timeSpent has an entry for every question, even if unanswered
+    const completedTimeSpent = [...stats.timeSpent];
+    while (completedTimeSpent.length < totalQuestions) {
+      completedTimeSpent.push(30); // Add max time for unanswered questions
+    }
+    const totalTime = completedTimeSpent.reduce(
+      (total, time) => total + time,
+      0
+    );
+    const averageTime =
+      totalQuestions > 0 ? Math.round(totalTime / totalQuestions) : 0;
+
+    return {
+      totalScore: stats.actualScore,
+      timeBonus: stats.timeBonusTotal,
+      correctAnswers: stats.correctCount,
+      totalQuestions,
+      accuracy:
+        totalQuestions > 0
+          ? Math.round((stats.correctCount / totalQuestions) * 100)
+          : 0,
+      averageTime: averageTime,
+      streak: stats.finalStreak, // Use the final streak calculated
+    };
+    // Dependencies for useCallback: stats state and the number of questions
+  }, [stats, currentQuiz?.questions.length]);
 
   // Update question and progress
   useEffect(() => {
@@ -631,70 +675,75 @@ const QuizPage = () => {
     return () => clearInterval(timer);
   }, [quizState.currentQuestionIndex]);
 
-  // Add this function before handleTimeUp
-  const calculateFinalStats = () => {
-    const totalQuestions = currentQuiz.questions.length;
-    const finalScore = stats.actualScore;
-
-    return {
-      totalScore: finalScore,
-      timeBonus: stats.timeBonusTotal,
-      correctAnswers: stats.correctCount,
-      totalQuestions,
-      accuracy: Math.round((stats.correctCount / totalQuestions) * 100),
-      averageTime: Math.round(
-        stats.timeSpent.reduce((total, time) => total + time, 0) /
-          totalQuestions
-      ),
-    };
-  };
-
-  const handleTimeUp = () => {
-    if (!currentQuiz?.questions) return;
-
-    if (!quizState.selectedOption) {
-      setStats((prev) => ({
-        ...prev,
-        timeSpent: [...prev.timeSpent, 30],
-      }));
+  // useEffect to calculate final stats *after* stats state updates and results are shown
+  useEffect(() => {
+    // Only calculate when results should be shown and stats have potentially updated
+    if (results.showResults) {
+      const finalStats = calculateFinalStats(); // Reads the latest 'stats' state
+      // Check if the calculated stats are different from the current ones to avoid infinite loops
+      if (JSON.stringify(finalStats) !== JSON.stringify(results.quizStats)) {
+        setResults((prevResults) => ({
+          ...prevResults,
+          quizStats: finalStats,
+        }));
+      }
     }
+    // Dependency array
+  }, [stats, results.showResults, calculateFinalStats, results.quizStats]);
 
-    if (quizState.currentQuestionIndex < currentQuiz.questions.length - 1) {
-      const nextIndex = quizState.currentQuestionIndex + 1;
+  const handleTimeUp = useCallback(() => {
+    if (!currentQuiz?.questions || results.showResults) return;
+  
+    const currentQuestionIndex = quizState.currentQuestionIndex;
+    const totalQuestions = currentQuiz.questions.length;
+    const isLastQuestion = currentQuestionIndex >= totalQuestions - 1;
+    const currentQuestion = currentQuiz.questions[currentQuestionIndex];
+    const isCorrect = quizState.selectedOption === currentQuestion.correctAnswer;
+  
+    // Calculate new values
+    const newStreak = isCorrect ? quizState.streak + 1 : 0;
+    const pointsEarned = isCorrect ? 10 : 0;
+  
+    if (isLastQuestion) {
+      // For last question, update final stats
+      const finalStats = {
+        totalScore: quizState.score + pointsEarned + stats.timeBonusTotal,
+        timeBonus: stats.timeBonusTotal,
+        correctAnswers: stats.correctCount + (isCorrect ? 1 : 0),
+        totalQuestions,
+        accuracy: Math.round(((stats.correctCount + (isCorrect ? 1 : 0)) / totalQuestions) * 100),
+        streak: newStreak
+      };
+  
+      setResults({
+        showResults: true,
+        quizStats: finalStats
+      });
+    } else {
+      // For non-last questions, delay display updates until next question
       setTimeout(() => {
-        setQuizState((prev) => ({
+        setQuizState(prev => ({
           ...prev,
-          currentQuestionIndex: nextIndex,
+          currentQuestionIndex: prev.currentQuestionIndex + 1,
           selectedOption: null,
           isAnswerLocked: false,
           countdown: 30,
+          score: prev.score + pointsEarned,
+          streak: newStreak,
+          displayScore: prev.score + pointsEarned, // Update display score
+          displayStreak: newStreak // Update display streak
         }));
-      }, 1000);
-    } else {
-      // Calculate final stats including the last question
-      const lastAnswer = stats.answers[stats.answers.length - 1];
-      const totalQuestions = currentQuiz.questions.length;
-
-      setResults({
-        showResults: true,
-        quizStats: {
-          totalScore: stats.actualScore + (lastAnswer?.questionScore || 0),
-          timeBonus: stats.timeBonusTotal + (lastAnswer?.timeBonus || 0),
-          correctAnswers: stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0),
-          totalQuestions,
-          accuracy: Math.round(
-            ((stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0)) /
-              totalQuestions) *
-              100
-          ),
-          averageTime: Math.round(
-            stats.timeSpent.reduce((total, time) => total + time, 0) /
-              totalQuestions
-          ),
-        },
-      });
+  
+        setStats(prev => ({
+          ...prev,
+          correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
+          actualScore: prev.actualScore + pointsEarned,
+          finalStreak: newStreak,
+          timeSpent: [...prev.timeSpent, 30 - quizState.countdown]
+        }));
+      }, 500); // Use a fixed delay for smoother transition
     }
-  };
+  }, [currentQuiz?.questions, quizState, stats, results.showResults]);
 
   // Add this handler function
   const handleResetSelection = () => {
@@ -705,21 +754,18 @@ const QuizPage = () => {
         selectedOption: null,
         isAnswerLocked: false, // Unlock to allow re-selection
       }));
-      // Note: We don't revert score/stats here as they are updated upon selection lock.
-      // If the user re-selects, handleOptionSelect will run again.
-      // If they don't re-select before time runs out, handleTimeUp will proceed without a selected option.
     }
   };
 
   const handleOptionSelect = (option) => {
-    // No changes needed here based on the request, it locks immediately
-    if (quizState.isAnswerLocked) return;
+    if (quizState.isAnswerLocked || results.showResults) return; // Prevent selection if locked or quiz ended
 
     const isCorrect = option === quizState.question?.correctAnswer;
     const timeBonus = isCorrect ? Math.floor(quizState.countdown / 2) : 0;
     const pointsEarned = isCorrect ? 100 + timeBonus : 0;
-    const newStreak = isCorrect ? quizState.streak + 1 : 0;
+    const newStreak = isCorrect ? quizState.streak + 1 : 0; // Calculate potential new streak
 
+    // Lock the answer immediately
     setQuizState((prev) => ({
       ...prev,
       selectedOption: option,
@@ -727,42 +773,41 @@ const QuizPage = () => {
     }));
 
     // Update statistics immediately for final results
+    // globalStreak = newStreak, // Update global streak tracker
     setStats((prev) => ({
       ...prev,
       actualScore: prev.actualScore + pointsEarned,
       timeBonusTotal: prev.timeBonusTotal + timeBonus,
       correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
-      timeSpent: [...prev.timeSpent, 30 - quizState.countdown],
+      // Ensure timeSpent length matches current question index before adding
+      timeSpent:
+        prev.timeSpent.length === quizState.currentQuestionIndex
+          ? [...prev.timeSpent, 30 - quizState.countdown]
+          : prev.timeSpent, // Avoid adding time twice if reset/reselect happens fast
       answers: [
+        // Keep track of detailed answer info if needed
         ...prev.answers,
-        {
-          quesKey: quizState.currentQuestionIndex,
-          selectedAnswer: option,
-          correctAnswer: quizState.question?.correctAnswer,
-          isCorrect,
-          timeLeft: quizState.countdown,
-          questionScore: pointsEarned,
-          timeBonus,
-          streak: newStreak,
-        },
+        {},
       ],
+      finalStreak: newStreak, // Update final streak tracker
     }));
 
-    // Delay display score and streak update until next question
-    setTimeout(() => {
-      setQuizState((prev) => ({
-        ...prev,
-        displayScore: prev.displayScore + pointsEarned,
-        streak: newStreak,
-      }));
-    }, quizState.countdown * 1000);
+    // Update display score and streak for the UI immediately
+    setQuizState((prev) => ({
+      ...prev,
+      displayScore: prev.displayScore + pointsEarned, // Update display score immediately
+      streak: newStreak, // Update display streak immediately
+    }));
   };
 
   if (results.showResults) {
+    console.log("Results:", results.quizStats);
+    console.log("Streak:", globalStreak);
     return (
       <ResultLayout
         quizStats={results.quizStats}
         onHomeClick={() => navigate("/")}
+        userStreak={globalStreak}
       />
     );
   }
@@ -776,13 +821,10 @@ const QuizPage = () => {
     setSelectedOption: handleOptionSelect, // This locks the answer
     onResetSelection: handleResetSelection, // Pass the new handler
     countdown: quizState.countdown,
-    setIsAnswerLocked: (
-      value // This might not be needed if locking is handled internally
-    ) => setQuizState((prev) => ({ ...prev, isAnswerLocked: value })),
-    onTimeUp: handleTimeUp,
-    score: quizState.displayScore,
+    onTimeUp: handleTimeUp, // handleTimeUp handles timeout logic
+    score: quizState.displayScore, // Use displayScore for UI
     currentQuestionIndex: quizState.currentQuestionIndex,
-    streak: quizState.streak,
+    streak: quizState.streak, // Use display streak for UI
   };
 
   return isMobile ? (
