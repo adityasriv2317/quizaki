@@ -56,12 +56,12 @@ const Carousel = () => {
       {/* slider */}
       <div className="relative flex items-center justify-center mt-10 overflow-hidden py-4 px-10">
         {/* case */}
-        <img
+        {/* <img
           src={phone}
           className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-full ${
             visibleImages == 5 ? "scale-110" : "scale-90"
           } md:w-1/5 z-20`}
-        />
+        /> */}
         <div
           className="slider flex transition-transform duration-500 ease-in-out"
           style={{
