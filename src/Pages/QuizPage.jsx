@@ -87,13 +87,13 @@ const DesktopLayout = ({
                   </p>
                   {/* Reset Button - Show only when an option is selected and locked */}
                   {/* {selectedOption && isAnswerLocked && ( */}
-                    <button
-                      onClick={onResetSelection} // Use the passed handler
-                      className="bg-red-300 text-black/70 font-semibold px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
-                    >
-                      <FontAwesomeIcon icon={faUndo} className="mr-2" />
-                      Reset
-                    </button>
+                  <button
+                    onClick={onResetSelection} // Use the passed handler
+                    className="bg-red-300 text-black/70 font-semibold px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
+                  >
+                    <FontAwesomeIcon icon={faUndo} className="mr-2" />
+                    Reset
+                  </button>
                   {/* )} */}
                 </div>
                 <div className="grid grid-cols-1 gap-4 mx-auto max-w-[90%] md:max-w-[90%]">
@@ -199,13 +199,13 @@ const MobLayout = ({
           </p>
           {/* Reset Button - Show only when an option is selected and locked */}
           {/* {selectedOption && isAnswerLocked && ( */}
-            <button
-              onClick={onResetSelection} // Use the passed handler
-              className="px-3 py-1.5 bg-red-50 text-black/70 rounded-full transition-all hover:bg-red-100"
-            >
-              <FontAwesomeIcon icon={faUndo} className="mr-1" />
-              Reset
-            </button>
+          <button
+            onClick={onResetSelection} // Use the passed handler
+            className="px-3 py-1.5 bg-red-50 text-black/70 rounded-full transition-all hover:bg-red-100"
+          >
+            <FontAwesomeIcon icon={faUndo} className="mr-1" />
+            Reset
+          </button>
           {/* )} */}
         </div>
         {/* List of answer options */}
@@ -561,6 +561,7 @@ const QuizPage = () => {
   const navigate = useNavigate();
   const { siteData } = useWebData();
   const { updateQuizState } = useQuiz();
+  const [globalStreak, setGlobalStreak] = useState(0);
 
   // Consolidated quiz state
   const [quizState, setQuizState] = useState({
@@ -675,6 +676,10 @@ const QuizPage = () => {
       const lastAnswer = stats.answers[stats.answers.length - 1];
       const totalQuestions = currentQuiz.questions.length;
 
+      // setGlobalStreak((prev) => {
+      //   const newStreak = lastAnswer?.isCorrect? prev + 1 : 0;
+      //   return newStreak;
+      // });
       setResults({
         showResults: true,
         quizStats: {
@@ -705,9 +710,6 @@ const QuizPage = () => {
         selectedOption: null,
         isAnswerLocked: false, // Unlock to allow re-selection
       }));
-      // Note: We don't revert score/stats here as they are updated upon selection lock.
-      // If the user re-selects, handleOptionSelect will run again.
-      // If they don't re-select before time runs out, handleTimeUp will proceed without a selected option.
     }
   };
 
@@ -747,6 +749,7 @@ const QuizPage = () => {
         },
       ],
     }));
+    setGlobalStreak(newStreak);
 
     // Delay display score and streak update until next question
     setTimeout(() => {
@@ -763,6 +766,7 @@ const QuizPage = () => {
       <ResultLayout
         quizStats={results.quizStats}
         onHomeClick={() => navigate("/")}
+        userStreak={globalStreak}
       />
     );
   }
