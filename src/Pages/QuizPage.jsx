@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useWebData } from "../Security/WebData";
 import CountdownTimer from "../assets/CountdownTimer";
@@ -261,12 +261,13 @@ const MobLayout = ({
 };
 
 // Add this new component at the top with other layout components
-const ResultLayout = ({ quizStats, onHomeClick, userStreak }) => {
+const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
   const siteData = localStorage.getItem("siteData");
-  // Add null check for siteData before parsing
   const weUser = siteData ? JSON.parse(siteData) : {};
   const uid = weUser.uid;
   const code = weUser.code; // Assuming 'code' is the quizId
+
+  const invoked = useRef(false); // flag for useEffect
 
   // Add state for leaderboard
   const [leaderboardData, setLeaderboardData] = useState([]);
@@ -290,8 +291,9 @@ const ResultLayout = ({ quizStats, onHomeClick, userStreak }) => {
     const userStatData = {
       uid: uid,
       quizId: code,
+      // score: quizStats.totalScore,
       score: quizStats.totalScore,
-      streak: userStreak, // Use the streak from quizStats directly
+      streak: globals.streak, // Use the streak from quizStats directly
       correctAnswers: quizStats.correctAnswers,
       incorrectAnswers: quizStats.totalQuestions - quizStats.correctAnswers,
       time: quizStats.averageTime,
@@ -346,10 +348,13 @@ const ResultLayout = ({ quizStats, onHomeClick, userStreak }) => {
     } finally {
       setLoadingLeaderboard(false); // Stop loading
     }
-  }, [quizStats, code, uid]); // Add dependencies for useCallback
+  }, [quizStats, code, uid]);
 
   useEffect(() => {
-    saveStatsAndFetchLeaderboard();
+    if (!invoked.current) {
+      invoked.current = true;
+      saveStatsAndFetchLeaderboard();
+    }
   }, [saveStatsAndFetchLeaderboard]); // Depend on the memoized function
 
   // Helper function to render leaderboard content based on state
@@ -561,7 +566,10 @@ const QuizPage = () => {
   const navigate = useNavigate();
   const { siteData } = useWebData();
   const { updateQuizState } = useQuiz();
-  const [globalStreak, setGlobalStreak] = useState(0);
+  const [globalStreak, setGlobalStreak] = useState({
+    score: 0,
+    streak: 0,
+  });
 
   // Consolidated quiz state
   const [quizState, setQuizState] = useState({
@@ -749,7 +757,10 @@ const QuizPage = () => {
         },
       ],
     }));
-    setGlobalStreak(newStreak);
+    setGlobalStreak({
+      score: stats.actualScore,
+      streak: newStreak,
+    });
 
     // Delay display score and streak update until next question
     setTimeout(() => {
@@ -766,7 +777,7 @@ const QuizPage = () => {
       <ResultLayout
         quizStats={results.quizStats}
         onHomeClick={() => navigate("/")}
-        userStreak={globalStreak}
+        globals={globalStreak}
       />
     );
   }
