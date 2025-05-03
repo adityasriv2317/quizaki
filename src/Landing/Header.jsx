@@ -70,10 +70,10 @@ const Header = () => {
       const res = await axios.delete(
         `https://ccc-quiz.onrender.com/player/LogOut?email=${siteData.email}`
       );
-      userLogout();
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
+      userLogout();
       setProfileMenuMobile(false);
       setIsMenuOpen(false);
       setMenuSlide(false);
