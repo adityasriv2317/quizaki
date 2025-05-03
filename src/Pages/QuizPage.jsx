@@ -725,31 +725,39 @@ const QuizPage = () => {
     if (quizState.isAnswerLocked) {
       // Find the current answer in stats to remove its effects
       const currentAnswer = stats.answers[stats.answers.length - 1];
-      
+
       // Reset quiz state including score and streak
       setQuizState((prev) => ({
         ...prev,
         selectedOption: null,
         isAnswerLocked: false,
-        displayScore: prev.displayScore - currentAnswer.questionScore,
-        streak: prev.streak - (currentAnswer.isCorrect ? 1 : 0)
       }));
+
+      setTimeout(() => {
+        setQuizState((prev) => ({
+          ...prev,
+          displayScore: prev.displayScore - currentAnswer.questionScore,
+          streak: prev.streak - (currentAnswer.isCorrect ? 1 : 0),
+        }));
+      }, quizState.countdown * 1000);
 
       // Update stats by removing the last answer
       setStats((prev) => ({
         ...prev,
         actualScore: prev.actualScore - currentAnswer.questionScore,
         timeBonusTotal: prev.timeBonusTotal - currentAnswer.timeBonus,
-        correctCount: currentAnswer.isCorrect ? prev.correctCount - 1 : prev.correctCount,
+        correctCount: currentAnswer.isCorrect
+          ? prev.correctCount - 1
+          : prev.correctCount,
         timeSpent: prev.timeSpent.slice(0, -1),
-        answers: prev.answers.slice(0, -1)
+        answers: prev.answers.slice(0, -1),
       }));
 
       // Update global streak
       setGlobalStreak((prev) => ({
         ...prev,
         score: prev.score - currentAnswer.questionScore,
-        streak: prev.streak - (currentAnswer.isCorrect ? 1 : 0)
+        streak: prev.streak - (currentAnswer.isCorrect ? 1 : 0),
       }));
     }
   };
