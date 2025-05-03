@@ -737,7 +737,9 @@ const QuizPage = () => {
         setQuizState((prev) => ({
           ...prev,
           displayScore: prev.displayScore - currentAnswer.questionScore,
-          streak: prev.streak - (currentAnswer.isCorrect ? 1 : 0),
+          streak: prev.streak
+            ? prev.streak - (currentAnswer.isCorrect ? 1 : 0)
+            : 0,
         }));
       }, quizState.countdown * 1000);
 
