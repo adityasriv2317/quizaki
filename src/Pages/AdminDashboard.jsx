@@ -9,7 +9,7 @@ import {
   faBars,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import { CirclePlus } from "lucide-react";
+import { CirclePlus, ShieldUser } from "lucide-react";
 import DBTable from "./DBTable";
 import Analytics from "../Admin/Analytics";
 import { Link, useNavigate } from "react-router-dom";
@@ -149,7 +149,8 @@ const AdminDashboard = () => {
                 className="flex items-center hover:bg-[rgba(0,0,0,0.1)] cursor-pointer p-2 rounded-r-lg"
                 onClick={() => setShowDropdown(!showDropdown)}
               >
-                <div className="h-8 aspect-square rounded-full bg-gray-500"></div>
+                {/* <div className="h-8 aspect-square rounded-full bg-gray-500"></div> */}
+                <ShieldUser />
                 <p className="mx-2">ADMIN</p>
                 <svg
                   className={`w-4 h-4 transform transition-transform ${
