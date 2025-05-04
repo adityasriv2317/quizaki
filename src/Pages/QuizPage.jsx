@@ -10,6 +10,7 @@ import { useQuiz } from "../Context/QuizContext";
 import { useAuth } from "../Security/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUndo } from "@fortawesome/free-solid-svg-icons";
+import ResultLayout from "./Result";
 
 // Pass props
 const DesktopLayout = ({
@@ -260,19 +261,26 @@ const MobLayout = ({
   );
 };
 
-// Add this new component at the top with other layout components
-const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
+const RLayout = ({ quizStats, onHomeClick, globals }) => {
   const siteData = localStorage.getItem("siteData");
   const weUser = siteData ? JSON.parse(siteData) : {};
   const uid = weUser.uid;
-  const code = weUser.code; // Assuming 'code' is the quizId
-
+  const code = weUser.code; // quizId
   const invoked = useRef(false); // flag for useEffect
-
   // Add state for leaderboard
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
   const [leaderboardError, setLeaderboardError] = useState(null);
+
+  // Save quiz data to session storage
+  useEffect(() => {
+    const quizData = {
+      code: code,
+      stats: quizStats,
+      globals: globals,
+    };
+    sessionStorage.setItem("isPlayed", JSON.stringify(quizData));
+  }, [code, quizStats, globals]);
 
   // State to manage leaderboard expansion
   const [isLeaderboardExpanded, setIsLeaderboardExpanded] = useState(false);
@@ -280,7 +288,7 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
   // Wrap the data fetching logic in useCallback
   const saveStatsAndFetchLeaderboard = useCallback(async () => {
     if (!uid || !code) {
-      console.error("User ID or Quiz Code is missing.");
+      // console.error("User ID or Quiz Code is missing.");
       setLeaderboardError(
         "Cannot load leaderboard: User or Quiz information missing."
       );
@@ -299,7 +307,7 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
       time: quizStats.averageTime,
     };
 
-    console.log("Submitting user stats with streak:", userStatData);
+    // console.log("Submitting user stats with streak:", userStatData);
 
     const saveAPI = "https://ccc-quiz.onrender.com/player/SavePlayer";
     const leaderboardAPI = `https://ccc-quiz.onrender.com/player/leaderboard/${code}`;
@@ -308,16 +316,16 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
     setLeaderboardError(null); // Reset error
     try {
       try {
-        console.log("Sending stats to:", saveAPI);
+        // console.log("Sending stats to:", saveAPI);
         const saveResponse = await axios.post(saveAPI, userStatData);
-        console.log("Stats saved successfully:", saveResponse.data);
+        // console.log("Stats saved successfully:", saveResponse.data);
       } catch (saveError) {
-        console.error("Error saving stats:", saveError);
+        // console.error("Error saving stats:", saveError);
         // Log and continue to fetch leaderboard
       }
 
       // Fetch leaderboard data
-      console.log("Fetching leaderboard from:", leaderboardAPI);
+      // console.log("Fetching leaderboard from:", leaderboardAPI);
       const leaderboardResponse = await axios.get(leaderboardAPI);
       // console.log("Leaderboard data received:", leaderboardResponse.data);
 
@@ -491,9 +499,9 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
                 <span className="font-semibold">{quizStats.accuracy}%</span>
               </div>
               {/* <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-                <span className="text-gray-600">Average Time</span>
-                <span className="font-semibold">{quizStats.averageTime}s</span>
-              </div> */}
+                  <span className="text-gray-600">Average Time</span>
+                  <span className="font-semibold">{quizStats.averageTime}s</span>
+                </div> */}
             </div>
           </div>
           {/* Leaderboard Section */}
@@ -814,6 +822,38 @@ const QuizPage = () => {
       }));
     }, quizState.countdown * 1000);
   };
+
+  useEffect(() => {
+    const siteData = localStorage.getItem("siteData");
+    const weUser = siteData ? JSON.parse(siteData) : {};
+
+    const sessionData = sessionStorage.getItem("isPlayed");
+    const ssData = sessionData ? JSON.parse(sessionData) : {};
+
+    // console.log(ssData);
+    // console.log(code);
+
+    if (ssData.code == weUser.code) {
+      console.log(ssData);
+      setResults({
+        showResults: true,
+        quizStats: ssData.stats,
+        globals: ssData.globals,
+      });
+      //   // window.location.href = "/quiz/result"
+      // );
+
+      // navigate("/quiz/results", {
+      //   state: {
+      //     quizStats: ssData.stats,
+      //     onHomeClick: () => navigate("/"),
+      //     globals: ssData.globals,
+      //   },
+      // });
+    } else {
+      // console.log("Not Played");
+    }
+  }, []);
 
   if (results.showResults) {
     return (

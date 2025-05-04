@@ -14,6 +14,7 @@ import CreateQuiz from "./Admin/CreateQuiz";
 import Analytics from "./Admin/Analytics";
 import { QuizProvider } from "./Context/QuizContext";
 import { AuthProvider } from "./Security/AuthContext";
+import ResultLayout from "./Pages/Result";
 
 const App = () => {
   return (
@@ -49,6 +50,7 @@ const App = () => {
                 {/* <Route path="/room" element={<QuizRoom />} /> */}
                 <Route path="/room/:roomId/:player" element={<QuizRoom />} />
                 <Route path="/quiz/:roomCode" element={<QuizPage />} />
+                <Route path="/quiz/results" element={<ResultLayout />} />
               </Routes>
             </Router>
           </QuizProvider>
