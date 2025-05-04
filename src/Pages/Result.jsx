@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Expand, X } from "lucide-react";
+import { Expand, X, RefreshCcw } from "lucide-react";
 import Spinner from "../assets/Spinner";
 import axios from "axios";
 
@@ -195,6 +195,27 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
     );
   };
 
+  const fetchLeaderboard = useCallback(async () => {
+    setLoadingLeaderboard(true);
+    setLeaderboardError(null);
+    const leaderboardAPI = `https://ccc-quiz.onrender.com/player/leaderboard/${code}`;
+    try {
+      const leaderboardResponse = await axios.get(leaderboardAPI);
+      const data = Array.isArray(leaderboardResponse.data)
+        ? leaderboardResponse.data
+        : [];
+      // Sort here to ensure consistent order
+      const sortedData = data.sort((a, b) => (b.score || 0) - (a.score || 0));
+      setLeaderboardData(sortedData);
+    } catch (error) {
+      if (error.response) {
+        console.error("Error data:", error.response.data);
+      }
+    } finally {
+      setLoadingLeaderboard(false);
+    }
+  }, [code]);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#b74358] to-[#812939] p-4">
       <div className="w-full max-w-4xl mx-auto px-4">
@@ -255,13 +276,22 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
               </h2>
               {/* Show Expand button only if not expanded and data exists */}
               {!isLeaderboardExpanded && leaderboardData.length > 5 && (
-                <button
-                  onClick={() => setIsLeaderboardExpanded(true)}
-                  className="text-[#812939] hover:text-[#b74358] transition-colors"
-                  aria-label="Expand Leaderboard"
-                >
-                  <Expand size={24} />
-                </button>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    onClick={fetchLeaderboard}
+                    className="text-[#812939] hover:text-[#b74358] transition-colors"
+                    aria-label="Refresh Leaderboard"
+                  >
+                    <RefreshCcw size={24} />
+                  </button>
+                  <button
+                    onClick={() => setIsLeaderboardExpanded(true)}
+                    className="text-[#812939] hover:text-[#b74358] transition-colors"
+                    aria-label="Expand Leaderboard"
+                  >
+                    <Expand size={24} />
+                  </button>
+                </div>
               )}
             </div>
             {/* Compact Leaderboard View */}
