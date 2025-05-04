@@ -15,7 +15,7 @@ const Footer = () => {
     <div className="py-8">
       <div className="hidden md:flex flex-col md:flex-row justify-around items-center">
         <div className="justify-center">
-          <div className="flex space-x-4">
+          {/* <div className="flex space-x-4">
             <img
               className="w-24 md:w-32 aspect-video object-cover"
               src={playStore}
@@ -26,9 +26,9 @@ const Footer = () => {
               src={appStore}
               alt="App Store"
             />
-          </div>
+          </div> */}
 
-          <div className="flex items-center justify-evenly mx-auto">
+          <div className="flex items-center gap-6 justify-evenly mx-auto">
             <a
               href="https://instagram.com"
               target="_blank"
@@ -77,7 +77,7 @@ const Footer = () => {
 
       <div className="block md:hidden">
         <div className="flex flex-col justify-center items-center">
-          <div className="flex justify-center space-x-4 my-4">
+          {/* <div className="flex justify-center space-x-4 my-4">
             <img
               className="w-24 aspect-video object-cover"
               src={playStore}
@@ -88,7 +88,7 @@ const Footer = () => {
               src={appStore}
               alt="App Store"
             />
-          </div>
+          </div> */}
           <div className="flex mx-auto justify-center space-x-4">
             <a
               href="https://instagram.com"
