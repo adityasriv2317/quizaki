@@ -19,32 +19,12 @@ const DesktopLayout = ({
   selectedOption,
   isAnswerLocked,
   setSelectedOption,
-  onResetSelection,
+  onResetSelection, // Add onResetSelection prop
   onTimeUp,
   countdown,
   score,
   streak,
-  onNextQuestion,
-  onPreviousQuestion,
-  currentQuestionIndex,
-  totalQuestions,
-  stats,
-  setQuizState,
-  answeredQuestions,
-  userAnswers,
 }) => {
-  // Function to get a consistent emoji based on user data
-  const getFixedEmoji = () => {
-    const emojis = ["🐶", "🐱", "🦁", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐯"];
-    const userString = siteData?.user || siteData?.email || "Guest";
-    const hash = userString
-      .split("")
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return emojis[hash % emojis.length];
-  };
-
-  const userEmoji = getFixedEmoji();
-
   return (
     <div className="min-h-screen w-full flex flex-col bg-gradient-to-br from-[#b74358] to-[#812939] text-white p-4">
       {/* Progress Bar */}
@@ -60,65 +40,24 @@ const DesktopLayout = ({
         {/* Left Panel (Fixed Height on Desktop) */}
         <div className="w-full md:w-3/12 h-auto md:h-[80vh] md:mb-0 md:mt-auto bg-gray-200 text-black p-6 shadow-md rounded-md flex flex-col justify-between items-center">
           {/* Timer */}
-          <div className="flex items-center justify-center w-full">
-            {/* Score Section */}
-            {/* <div className="bg-violet-200 font-mono font-light text-lg md:text-2xl px-4 w-3/5 py-2 rounded-md">
-              <span className="uppercase">score : {score}</span>
-              <div className="text-sm mt-2">streak: {streak}</div>
-            </div> */}
-            <CountdownTimer
-              duration={30}
-              onTimeUp={onTimeUp}
-              currentTime={countdown}
-            />
+          <CountdownTimer
+            duration={30}
+            onTimeUp={onTimeUp}
+            currentTime={countdown}
+          />
+
+          {/* Score Section */}
+          <div className="bg-violet-200 font-mono font-light text-lg md:text-2xl px-4 py-2 rounded-md mt-4">
+            <span className="uppercase">score : {score}</span>
+            <div className="text-sm mt-2">streak: {streak}</div>
           </div>
 
-          {/* questions grid */}
-          <div className="w-full">
-            <h3 className="text-lg font-semibold text-center mb-2">
-              Questions
-            </h3>
-            <div className="grid grid-cols-5 rounded-md gap-2 border-2 p-4 bg-white/20 border-red-600">
-              {Array.from({ length: totalQuestions }, (_, index) => {
-                let buttonColor = "bg-white text-black"; // Default for unvisited
-
-                if (answeredQuestions.includes(index)) {
-                  buttonColor = "bg-green-500 text-white"; // Answered questions stay green
-                } else if (index === currentQuestionIndex) {
-                  buttonColor = "bg-purple-500 text-white"; // Current question when not answered
-                } else if (index < currentQuestionIndex) {
-                  buttonColor = "bg-red-500 text-white"; // Visited but not answered
-                }
-
-                return (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setQuizState((prev) => ({
-                        ...prev,
-                        currentQuestionIndex: index,
-                        selectedOption: null,
-                        isAnswerLocked: false,
-                      }));
-                    }}
-                    className={`w-8 h-8 rounded-md ${buttonColor} transition-all hover:opacity-80 font-semibold`}
-                  >
-                    {index + 1}
-                  </button>
-                );
-              })}
-            </div>
+          {/* User Details */}
+          <div className="text-center mb-20">
+            <p className="text-xl md:text-2xl">{siteData?.user || "Guest"}</p>
+            <p className="text-sm md:text-base">{siteData?.email || "N/A"}</p>
           </div>
 
-          <div className="flex flex-row mb-20 gap-4 items-center justify-between">
-            <div className="bg-gray-400 rounded-full w-14 h-14 flex items-center justify-center text-4xl">
-              {userEmoji}
-            </div>
-            <div className="text-left">
-              <p className="text-xl md:text-2xl">{siteData?.user || "Guest"}</p>
-              <p className="text-sm md:text-base">{siteData?.email || "N/A"}</p>
-            </div>
-          </div>
         </div>
 
         {/* Right Panel - Question */}
@@ -147,50 +86,29 @@ const DesktopLayout = ({
                   <p className="text-lg text-white font-light ml-4 text-center md:text-left">
                     Choose the Correct Option
                   </p>
-                  <div className="flex font-semibold text-black/70 justify-end gap-4">
-                    <button
-                      onClick={onPreviousQuestion}
-                      disabled={currentQuestionIndex === 0}
-                      className={`px-4 py-2 rounded-md ${
-                        currentQuestionIndex === 0
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-red-400 hover:bg-red-500"
-                      } transition-all`}
-                    >
-                      &lt;
-                    </button>
-                    <button
-                      onClick={onNextQuestion}
-                      disabled={currentQuestionIndex === totalQuestions - 1}
-                      className={`px-4 py-2 rounded-md ${
-                        currentQuestionIndex === totalQuestions - 1
-                          ? "bg-gray-400 cursor-not-allowed"
-                          : "bg-red-400 hover:bg-red-500"
-                      } transition-all`}
-                    >
-                      &gt;
-                    </button>
-                    {userAnswers[currentQuestionIndex] && (
-                      <button
-                        onClick={onResetSelection}
-                        className="bg-red-300 px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
-                      >
-                        <FontAwesomeIcon icon={faUndo} className="mr-2" />
-                        Reset
-                      </button>
-                    )}
-                  </div>
+                  {/* Reset Button - Show only when an option is selected and locked */}
+                  {/* {selectedOption && isAnswerLocked && ( */}
+                  <button
+                    onClick={onResetSelection} // Use the passed handler
+                    className="bg-red-300 text-black/70 font-semibold px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
+                  >
+                    <FontAwesomeIcon icon={faUndo} className="mr-2" />
+                    Reset
+                  </button>
+                  {/* )} */}
                 </div>
                 <div className="grid grid-cols-1 gap-4 mx-auto max-w-[90%] md:max-w-[90%]">
                   {question.options.map((option, index) => (
                     <button
                       key={index}
+                      // Disable other options when one is selected and locked
                       disabled={isAnswerLocked && selectedOption !== option}
                       className={`py-3 px-20 md:py-4 rounded-md shadow-md flex flex-row items-center justify-between text-base md:text-lg font-semibold transition-all ${
                         selectedOption === option
                           ? "bg-red-200 text-black ring-2 ring-red-500" // Highlight selected/locked
                           : "bg-[rgb(244,230,230)]"
                       } ${
+                        // Dim other options when one is locked
                         isAnswerLocked && selectedOption !== option
                           ? "opacity-50 cursor-not-allowed"
                           : "hover:bg-red-100" // Add hover effect only if not locked
@@ -198,6 +116,7 @@ const DesktopLayout = ({
                       onClick={() => setSelectedOption(option)}
                     >
                       {option}
+                      {/* Show lock icon only on the selected option when locked */}
                       {selectedOption === option && isAnswerLocked && (
                         <Lock size={20} />
                       )}
@@ -219,53 +138,27 @@ const MobLayout = ({
   selectedOption,
   setSelectedOption,
   isAnswerLocked,
-  onResetSelection,
+  setIsAnswerLocked, // Keep this if needed elsewhere, but reset handles its part
+  onResetSelection, // Add onResetSelection prop
   onTimeUp,
   countdown,
   score,
-  currentQuestionIndex,
-  onNextQuestion,
-  onPreviousQuestion,
-  totalQuestions,
+  currentQuestionIndex, // Add this prop
 }) => {
+  // Remove the quesNo state and useEffect
   return (
     <div className="min-h-screen w-full bg-gray-300 flex flex-col">
       <div className="p-4 bg-[rgb(185,68,89)] text-white shadow-md">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-semibold">
-            Question : {currentQuestionIndex + 1}
-          </h3>
-          <div className="flex gap-2">
-            <button
-              onClick={onPreviousQuestion}
-              disabled={currentQuestionIndex === 0}
-              className={`px-3 py-1 rounded-md text-sm ${
-                currentQuestionIndex === 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-red-400 hover:bg-red-500"
-              } transition-all`}
-            >
-              &lt;
-            </button>
-            <button
-              onClick={onNextQuestion}
-              disabled={currentQuestionIndex === totalQuestions - 1}
-              className={`px-3 py-1 rounded-md text-sm ${
-                currentQuestionIndex === totalQuestions - 1
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-red-400 hover:bg-red-500"
-              } transition-all`}
-            >
-              &gt;
-            </button>
-          </div>
-        </div>
-        <div className="flex justify-between items-center">
+        <h3 className="text-lg flex flex-row justify-between w-full font-semibold text-left mt-4">
+          <span>Question : {currentQuestionIndex + 1}</span>
           <span>Score: {score}</span>
-          <span>
-            Time: {Math.floor(countdown / 60)}:
-            {(countdown % 60).toString().padStart(2, "0")}
-          </span>
+        </h3>
+        {/* Progress bar for question navigation */}
+        <div className="w-full h-2 bg-gray-300 rounded-full overflow-hidden mt-2">
+          <div
+            className="h-full bg-red-400 rounded-md transition-all ease-out"
+            style={{ width: `${progress}%` }}
+          ></div>
         </div>
       </div>
 
@@ -380,7 +273,7 @@ const QuizPage = () => {
 
   // Consolidated quiz state
   const [quizState, setQuizState] = useState({
-    countdown: 1800, // 30 minutes in seconds
+    countdown: 30,
     progress: 0,
     currentQuestionIndex: 0,
     isAnswerLocked: false,
@@ -388,8 +281,6 @@ const QuizPage = () => {
     question: null,
     displayScore: 0,
     streak: 0,
-    answeredQuestions: [], // Track answered questions
-    userAnswers: {}, // Store user answers for each question
   });
 
   // Statistics state
@@ -433,52 +324,14 @@ const QuizPage = () => {
     }));
   }, [currentQuiz, quizState.currentQuestionIndex]);
 
-  // Update the question navigation to restore previous answers
-  const handleQuestionNavigation = (index) => {
-    const previousAnswer = quizState.userAnswers[index];
-    setQuizState((prev) => ({
-      ...prev,
-      currentQuestionIndex: index,
-      selectedOption: previousAnswer || null,
-      isAnswerLocked: !!previousAnswer,
-    }));
-  };
-
-  // Update handleNextQuestion and handlePreviousQuestion
-  const handleNextQuestion = () => {
-    if (quizState.currentQuestionIndex < currentQuiz.questions.length - 1) {
-      const nextIndex = quizState.currentQuestionIndex + 1;
-      const previousAnswer = quizState.userAnswers[nextIndex];
-      setQuizState((prev) => ({
-        ...prev,
-        currentQuestionIndex: nextIndex,
-        selectedOption: previousAnswer || null,
-        isAnswerLocked: !!previousAnswer,
-      }));
-    }
-  };
-
-  const handlePreviousQuestion = () => {
-    if (quizState.currentQuestionIndex > 0) {
-      const prevIndex = quizState.currentQuestionIndex - 1;
-      const previousAnswer = quizState.userAnswers[prevIndex];
-      setQuizState((prev) => ({
-        ...prev,
-        currentQuestionIndex: prevIndex,
-        selectedOption: previousAnswer || null,
-        isAnswerLocked: !!previousAnswer,
-      }));
-    }
-  };
-
-  // Update timer effect
+  // Timer effect
   useEffect(() => {
     const timer = setInterval(() => {
       setQuizState((prev) => {
         if (prev.countdown <= 1) {
-          clearInterval(timer);
+          clearInterval(timer); // Clear interval before handling time up
           handleTimeUp();
-          return { ...prev, countdown: 1800 }; // Reset to 30 minutes
+          return { ...prev, countdown: 30 };
         }
         return { ...prev, countdown: prev.countdown - 1 };
       });
@@ -556,7 +409,63 @@ const QuizPage = () => {
     }
   };
 
+  // Add this handler function
+  // const handleResetSelection = () => {
+  //   if (quizState.isAnswerLocked) {
+  //     // Only allow reset if an answer was locked by selection
+  //     setQuizState((prev) => ({
+  //       ...prev,
+  //       selectedOption: null,
+  //       isAnswerLocked: false, // Unlock to allow re-selection
+  //     }));
+  //   }
+  // };
+
+  const handleResetSelection = () => {
+    if (quizState.isAnswerLocked) {
+      // Find the current answer in stats to remove its effects
+      const currentAnswer = stats.answers[stats.answers.length - 1];
+
+      // Reset quiz state including score and streak
+      setQuizState((prev) => ({
+        ...prev,
+        selectedOption: null,
+        isAnswerLocked: false,
+      }));
+
+      setTimeout(() => {
+        setQuizState((prev) => ({
+          ...prev,
+          displayScore: prev.displayScore - currentAnswer.questionScore,
+          streak: prev.streak
+            ? prev.streak - (currentAnswer.isCorrect ? 1 : 0)
+            : 0,
+        }));
+      }, quizState.countdown * 1000);
+
+      // Update stats by removing the last answer
+      setStats((prev) => ({
+        ...prev,
+        actualScore: prev.actualScore - currentAnswer.questionScore,
+        timeBonusTotal: prev.timeBonusTotal - currentAnswer.timeBonus,
+        correctCount: currentAnswer.isCorrect
+          ? prev.correctCount - 1
+          : prev.correctCount,
+        timeSpent: prev.timeSpent.slice(0, -1),
+        answers: prev.answers.slice(0, -1),
+      }));
+
+      // Update global streak
+      setGlobalStreak((prev) => ({
+        ...prev,
+        score: prev.score - currentAnswer.questionScore,
+        streak: prev.streak - (currentAnswer.isCorrect ? 1 : 0),
+      }));
+    }
+  };
+
   const handleOptionSelect = (option) => {
+    // No changes needed here based on the request, it locks immediately
     if (quizState.isAnswerLocked) return;
 
     const isCorrect = option === quizState.question?.correctAnswer;
@@ -564,19 +473,13 @@ const QuizPage = () => {
     const pointsEarned = isCorrect ? 100 + timeBonus : 0;
     const newStreak = isCorrect ? quizState.streak + 1 : 0;
 
-    // Store the selected option in userAnswers
     setQuizState((prev) => ({
       ...prev,
       selectedOption: option,
-      isAnswerLocked: true,
-      answeredQuestions: [...prev.answeredQuestions, quizState.currentQuestionIndex],
-      userAnswers: {
-        ...prev.userAnswers,
-        [quizState.currentQuestionIndex]: option, // Store just the selected option
-      },
+      isAnswerLocked: true, // Lock happens here
     }));
 
-    // Update statistics
+    // Update statistics immediately for final results
     setStats((prev) => ({
       ...prev,
       actualScore: prev.actualScore + pointsEarned,
@@ -597,13 +500,12 @@ const QuizPage = () => {
         },
       ],
     }));
-
     setGlobalStreak({
       score: stats.actualScore,
       streak: newStreak,
     });
 
-    // Delay display score and streak update
+    // Delay display score and streak update until next question
     setTimeout(() => {
       setQuizState((prev) => ({
         ...prev,
@@ -611,44 +513,6 @@ const QuizPage = () => {
         streak: newStreak,
       }));
     }, quizState.countdown * 1000);
-  };
-
-  const handleResetSelection = () => {
-    if (quizState.isAnswerLocked) {
-      const currentAnswer = stats.answers[stats.answers.length - 1];
-
-      setQuizState((prev) => ({
-        ...prev,
-        selectedOption: null,
-        isAnswerLocked: false,
-        answeredQuestions: prev.answeredQuestions.filter(
-          (q) => q !== prev.currentQuestionIndex
-        ),
-        userAnswers: {
-          ...prev.userAnswers,
-          [prev.currentQuestionIndex]: null, // Clear the answer for this question
-        },
-      }));
-
-      // Update stats
-      setStats((prev) => ({
-        ...prev,
-        actualScore: prev.actualScore - currentAnswer.questionScore,
-        timeBonusTotal: prev.timeBonusTotal - currentAnswer.timeBonus,
-        correctCount: currentAnswer.isCorrect
-          ? prev.correctCount - 1
-          : prev.correctCount,
-        timeSpent: prev.timeSpent.slice(0, -1),
-        answers: prev.answers.slice(0, -1),
-      }));
-
-      // Update global streak
-      setGlobalStreak((prev) => ({
-        ...prev,
-        score: prev.score - currentAnswer.questionScore,
-        streak: prev.streak - (currentAnswer.isCorrect ? 1 : 0),
-      }));
-    }
   };
 
   useEffect(() => {
@@ -685,22 +549,16 @@ const QuizPage = () => {
     question: quizState.question,
     isAnswerLocked: quizState.isAnswerLocked,
     selectedOption: quizState.selectedOption,
-    setSelectedOption: handleOptionSelect,
-    onResetSelection: handleResetSelection,
+    setSelectedOption: handleOptionSelect, // This locks the answer
+    onResetSelection: handleResetSelection, // Pass the new handler
     countdown: quizState.countdown,
-    setIsAnswerLocked: (value) =>
-      setQuizState((prev) => ({ ...prev, isAnswerLocked: value })),
+    setIsAnswerLocked: (
+      value // This might not be needed if locking is handled internally
+    ) => setQuizState((prev) => ({ ...prev, isAnswerLocked: value })),
     onTimeUp: handleTimeUp,
     score: quizState.displayScore,
     currentQuestionIndex: quizState.currentQuestionIndex,
     streak: quizState.streak,
-    onNextQuestion: handleNextQuestion,
-    onPreviousQuestion: handlePreviousQuestion,
-    totalQuestions: currentQuiz?.questions?.length || 0,
-    stats: stats,
-    setQuizState: setQuizState,
-    answeredQuestions: quizState.answeredQuestions,
-    userAnswers: quizState.userAnswers,
   };
 
   return isMobile ? (

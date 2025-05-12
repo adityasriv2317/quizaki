@@ -41,6 +41,11 @@ const CountdownTimer = ({ duration, onTimeUp, currentTime }) => {
   }, [currentTime, onTimeUp]);
 
   const progress = (timeLeft / duration) * circumference;
+  
+  // Format time to show minutes and seconds
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
   return (
     <div className="relative w-28 h-28 flex items-center justify-center">
@@ -57,7 +62,7 @@ const CountdownTimer = ({ duration, onTimeUp, currentTime }) => {
           cx="50%"
           cy="50%"
           r={radius}
-          stroke={timeLeft <= 5 ? "#ff4444" : "#4caf50"}
+          stroke={timeLeft <= 300 ? "#ff4444" : "#4caf50"} // Red when less than 5 minutes left
           strokeWidth="8"
           fill="transparent"
           strokeDasharray={circumference}
@@ -66,13 +71,16 @@ const CountdownTimer = ({ duration, onTimeUp, currentTime }) => {
           style={{ transition: 'stroke-dashoffset 0.1s linear' }}
         />
       </svg>
-      <span
-        className={`text-2xl font-bold ${
-          timeLeft <= 5 ? "text-red-500" : "text-green-600"
-        }`}
-      >
-        {timeLeft}s
-      </span>
+      <div className="flex flex-col items-center">
+        <span
+          className={`text-xl font-bold ${
+            timeLeft <= 300 ? "text-red-500" : "text-green-600"
+          }`}
+        >
+          {formattedTime}
+        </span>
+        <span className="text-xs text-gray-600">Time Left</span>
+      </div>
     </div>
   );
 };
