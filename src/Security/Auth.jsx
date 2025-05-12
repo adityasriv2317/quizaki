@@ -89,9 +89,9 @@ const Auth = () => {
 
     try {
       setRegLoader(true);
-      console.log("Registering user...", regData);
+      // console.log("Registering user...", regData);
       const response = await axios.post(regUrl, regData);
-      console.log(response.data);
+      // console.log(response.data);
       setOtpOverlay(true);
     } catch (error) {
       setMessageType("error");
