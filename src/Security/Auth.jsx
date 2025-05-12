@@ -94,7 +94,7 @@ const Auth = () => {
       // console.log(response.data);
       setOtpOverlay(true);
     } catch (error) {
-      setMessageType("error");
+      setMessageType("error", error);
       setMessage("Registration failed. Please try again.");
     } finally {
       setRegLoader(false);
