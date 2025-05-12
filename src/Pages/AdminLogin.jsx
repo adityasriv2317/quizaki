@@ -94,7 +94,6 @@ const AdminLogin = () => {
     }
   };
 
-  // Redirect if already logged in
   useEffect(() => {
     const adminData = localStorage.getItem("adminData");
     if (adminData) {
@@ -169,11 +168,12 @@ const AdminLogin = () => {
                 placeholder="Enter admin password"
               />
 
-              <ReCAPTCHA
-                sitekey="6LcQ9poqAAAAAEmU3sOsQmC0vdLUV-lqCC2TR0uN"
-                className="md:mx-auto scale-75 md:scale-100"
-                onChange={onChange}
-              />
+              <div className="recaptcha-container">
+                <ReCAPTCHA
+                  sitekey="6LcQ9poqAAAAAEmU3sOsQmC0vdLUV-lqCC2TR0uN"
+                  onChange={onChange}
+                />
+              </div>
 
               <button
                 className={`shadow-sm ${

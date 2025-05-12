@@ -17,3 +17,27 @@ html {
     border-radius: 10px;
   }
 }
+
+/* ReCAPTCHA Responsive Styles */
+.recaptcha-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+.recaptcha-container > div {
+  transform-origin: center;
+}
+
+@media (max-width: 1200px) {
+  .recaptcha-container > div {
+    transform: scale(0.75);
+  }
+}
+
+@media (min-width: 641px) {
+  .recaptcha-container > div {
+    transform: scale(1);
+  }
+}

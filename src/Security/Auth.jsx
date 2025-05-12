@@ -60,7 +60,6 @@ const Auth = () => {
   const api = import.meta.env.VITE_API_URL;
 
   function onChange(value) {
-    // console.log("Captcha value:", value);
     setCaptchaToken(value);
     setCaptcha(!!value);
   }
@@ -97,26 +96,6 @@ const Auth = () => {
       setMessage("Registration failed. Please try again.");
     } finally {
       setRegLoader(false);
-    }
-  };
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (!email) {
-      setMessageType("error");
-      setMessage("Please enter your email.");
-      return;
-    }
-
-    try {
-      setInterval(() => {
-        setLoginLoader(true);
-        setOtpOverlay(true);
-      }, 5000);
-    } catch (error) {
-      setMessage("Login failed. Please check your email and try again.");
-    } finally {
-      setLoginLoader(false);
     }
   };
 
@@ -215,11 +194,12 @@ const Auth = () => {
                 placeholder="Enter your email"
               />
 
-              <ReCAPTCHA
-                sitekey="6LcQ9poqAAAAAEmU3sOsQmC0vdLUV-lqCC2TR0uN"
-                className="md:mx-auto scale-75 md:scale-100"
-                onChange={onChange}
-              />
+              <div className="recaptcha-container">
+                <ReCAPTCHA
+                  sitekey="6LcQ9poqAAAAAEmU3sOsQmC0vdLUV-lqCC2TR0uN"
+                  onChange={onChange}
+                />
+              </div>
 
               <button
                 className={`shadow-sm ${
