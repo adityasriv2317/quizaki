@@ -68,12 +68,12 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      console.log("email: ", siteData.email);
+      // console.log("email: ", siteData.email);
       const res = await axios.delete(
         `${api}/player/LogOut?email=${siteData.email}`
       );
     } catch (error) {
-      console.error("Logout failed:", error);
+      // console.error("Logout failed:", error);
     } finally {
       userLogout();
       setProfileMenuMobile(false);

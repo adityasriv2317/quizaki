@@ -90,9 +90,19 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
   }, [quizStats, code, uid]);
 
   useEffect(() => {
-    if (!invoked.current) {
-      invoked.current = true;
-      saveStatsAndFetchLeaderboard();
+    const siteData = localStorage.getItem("siteData");
+    const weUser = siteData ? JSON.parse(siteData) : {};
+
+    const sessionData = sessionStorage.getItem("isPlayed");
+    const ssData = sessionData ? JSON.parse(sessionData) : {};
+
+    if (ssData.code == weUser.code) {
+      // console.log("Session data matches site data. Fetching leaderboard.");
+    } else {
+      if (!invoked.current) {
+        invoked.current = true;
+        saveStatsAndFetchLeaderboard();
+      }
     }
   }, [saveStatsAndFetchLeaderboard]); // Depend on the memoized function
 

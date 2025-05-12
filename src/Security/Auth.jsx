@@ -203,7 +203,7 @@ const Auth = () => {
                 name="playerName"
                 id="playerName"
                 onChange={(e) => setPlayerName(e.target.value)}
-                className="rounded-md px-4 py-2 w-full text-sm md:text-base"
+                className="rounded-md px-4 py-2 w-full text-center text-sm md:text-base"
                 placeholder="Enter your player name"
               />
               <input
@@ -211,7 +211,7 @@ const Auth = () => {
                 name="email"
                 id="email"
                 onChange={(e) => setEmail(e.target.value)}
-                className="rounded-md px-4 py-2 w-full text-sm md:text-base"
+                className="rounded-md px-4 py-2 w-full text-center text-sm md:text-base"
                 placeholder="Enter your email"
               />
 
@@ -246,7 +246,6 @@ const Auth = () => {
           </div>
         </div>
 
-        {/* otp overlay */}
         <div
           className={`${
             otpOverlay ? "flex absolute" : "hidden"
@@ -274,15 +273,10 @@ const Auth = () => {
                 type="text"
                 name="otp"
                 id="otp"
-                className="rounded-md px-4 py-2 w-full text-gray-700 text-sm md:text-base"
+                className="rounded-md px-4 py-2 w-full text-center text-gray-700 text-sm md:text-base"
                 placeholder="Enter the OTP"
                 onChange={(e) => setUserOtp(e.target.value)}
               />
-
-              {/* <p className="text-center cursor-pointer text-sm md:text-base">
-                Didn't receive the OTP?{" "}
-                <span className="text-yellow-300">Resend OTP</span>
-              </p> */}
               <p className="text-center cursor-pointer text-yellow-300 text-sm md:text-base">
                 Please check your spam folder if not received within 30 seconds.
               </p>

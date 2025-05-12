@@ -521,28 +521,14 @@ const QuizPage = () => {
     const sessionData = sessionStorage.getItem("isPlayed");
     const ssData = sessionData ? JSON.parse(sessionData) : {};
 
-    // console.log(ssData);
-    // console.log(code);
-
     if (ssData.code == weUser.code) {
-      console.log(ssData);
+      // console.log(ssData);
       setResults({
         showResults: true,
         quizStats: ssData.stats,
         globals: ssData.globals,
       });
-      //   // window.location.href = "/quiz/result"
-      // );
-
-      // navigate("/quiz/results", {
-      //   state: {
-      //     quizStats: ssData.stats,
-      //     onHomeClick: () => navigate("/"),
-      //     globals: ssData.globals,
-      //   },
-      // });
     } else {
-      // console.log("Not Played");
     }
   }, []);
 

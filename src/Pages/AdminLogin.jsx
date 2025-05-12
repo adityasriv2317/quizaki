@@ -73,7 +73,7 @@ const AdminLogin = () => {
       password: password,
     };
 
-    const loginAPI = `${api}/user/login`;
+    const loginAPI = `https://mediconnect-pn3n.onrender.com/user/login`;
 
     try {
       setLoginLoader(true);
@@ -155,7 +155,7 @@ const AdminLogin = () => {
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="rounded-md px-4 py-2 w-full text-sm md:text-base"
+                className="rounded-md px-4 py-2 w-full text-center text-sm md:text-base"
                 placeholder="Enter admin email"
               />
 
@@ -165,7 +165,7 @@ const AdminLogin = () => {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="rounded-md px-4 py-2 w-full text-sm md:text-base"
+                className="rounded-md px-4 py-2 w-full text-center text-sm md:text-base"
                 placeholder="Enter admin password"
               />
 
