@@ -32,7 +32,6 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
   // Wrap the data fetching logic in useCallback
   const saveStatsAndFetchLeaderboard = useCallback(async () => {
     if (!uid || !code) {
-      // console.error("User ID or Quiz Code is missing.");
       setLeaderboardError(
         "Cannot load leaderboard: User or Quiz information missing."
       );
@@ -40,37 +39,47 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
       return;
     }
 
+    const sessionData = sessionStorage.getItem("isPlayed");
+    const ssData = sessionData ? JSON.parse(sessionData) : {};
+    const hasPlayed = ssData && ssData.code === code;
+
     const userStatData = {
       uid: uid,
       quizId: code,
-      // score: quizStats.totalScore,
       score: quizStats.totalScore,
-      streak: globals.streak, // Use the streak from quizStats directly
+      streak: globals.streak,
       correctAnswers: quizStats.correctAnswers,
       incorrectAnswers: quizStats.totalQuestions - quizStats.correctAnswers,
       time: quizStats.averageTime,
     };
 
-    // console.log("Submitting user stats with streak:", userStatData);
-
     const saveAPI = `${api}/player/SavePlayer`;
     const leaderboardAPI = `${api}/player/leaderboard/${code}`;
 
-    setLoadingLeaderboard(true); // Start loading before fetch
-    setLeaderboardError(null); // Reset error
+    setLoadingLeaderboard(true);
+    setLeaderboardError(null);
     try {
-      try {
-        const saveResponse = await axios.post(saveAPI, userStatData);
-      } catch (saveError) {}
+      // Only save if the user hasn't played this quiz before
+      if (!hasPlayed) {
+        try {
+          const saveResponse = await axios.post(saveAPI, userStatData);
+        } catch (saveError) {
+          console.error("Error saving stats:", saveError);
+        }
+      }
 
-      // Fetch leaderboard data
+      // Always fetch and update leaderboard
       const leaderboardResponse = await axios.get(leaderboardAPI);
-
-      // Ensure data is an array and sort by score descending
       const data = Array.isArray(leaderboardResponse.data)
         ? leaderboardResponse.data
         : [];
-      const sortedData = data.sort((a, b) => (b.score || 0) - (a.score || 0));
+      // Sort by score first, then by streak
+      const sortedData = data.sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score; // Sort by score first
+        }
+        return (b.streak || 0) - (a.streak || 0); // Then by streak
+      });
       setLeaderboardData(sortedData);
     } catch (error) {
       if (error.response) {
@@ -85,9 +94,9 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
         setLeaderboardError(`Failed to load leaderboard: ${error.message}`);
       }
     } finally {
-      setLoadingLeaderboard(false); // Stop loading
+      setLoadingLeaderboard(false);
     }
-  }, [quizStats, code, uid]);
+  }, [quizStats, code, uid, globals.streak]);
 
   useEffect(() => {
     const siteData = localStorage.getItem("siteData");
@@ -96,15 +105,11 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
     const sessionData = sessionStorage.getItem("isPlayed");
     const ssData = sessionData ? JSON.parse(sessionData) : {};
 
-    if (ssData.code == weUser.code) {
-      // console.log("Session data matches site data. Fetching leaderboard.");
-    } else {
-      if (!invoked.current) {
-        invoked.current = true;
-        saveStatsAndFetchLeaderboard();
-      }
+    if (!invoked.current) {
+      invoked.current = true;
+      saveStatsAndFetchLeaderboard();
     }
-  }, [saveStatsAndFetchLeaderboard]); // Depend on the memoized function
+  }, [saveStatsAndFetchLeaderboard]);
 
   // Helper function to render leaderboard content based on state
   const renderLeaderboardTable = (isExpandedView) => {
@@ -194,21 +199,35 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
     );
   };
 
-  const fetchLeaderboard = useCallback(async () => {
+  const getLeaderboard = useCallback(async () => {
+    const leaderboardAPI = `${api}/player/leaderboard/${code}`;
     setLoadingLeaderboard(true);
     setLeaderboardError(null);
-    const leaderboardAPI = `${api}/player/leaderboard/${code}`;
+    
     try {
       const leaderboardResponse = await axios.get(leaderboardAPI);
       const data = Array.isArray(leaderboardResponse.data)
         ? leaderboardResponse.data
         : [];
-      // Sort here to ensure consistent order
-      const sortedData = data.sort((a, b) => (b.score || 0) - (a.score || 0));
+      // Sort by score first, then by streak
+      const sortedData = data.sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score; // Sort by score first
+        }
+        return (b.streak || 0) - (a.streak || 0); // Then by streak
+      });
       setLeaderboardData(sortedData);
     } catch (error) {
       if (error.response) {
-        console.error("Error data:", error.response.data);
+        setLeaderboardError(
+          `Failed to load leaderboard: Server responded with status ${error.response.status}`
+        );
+      } else if (error.request) {
+        setLeaderboardError(
+          "Failed to load leaderboard: No response from server."
+        );
+      } else {
+        setLeaderboardError(`Failed to load leaderboard: ${error.message}`);
       }
     } finally {
       setLoadingLeaderboard(false);
@@ -277,7 +296,7 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
               {!isLeaderboardExpanded && leaderboardData.length > 5 && (
                 <div className="grid grid-cols-2 gap-4">
                   <button
-                    onClick={fetchLeaderboard}
+                    onClick={getLeaderboard}
                     className="text-[#812939] hover:text-[#b74358] transition-colors"
                     aria-label="Refresh Leaderboard"
                   >

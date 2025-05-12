@@ -48,11 +48,25 @@ const DesktopLayout = ({
   return (
     <div className="min-h-screen w-full flex flex-col bg-gradient-to-br from-[#b74358] to-[#812939] text-white p-4">
       {/* Progress Bar */}
-      <div className="w-full md:w-1/2 mx-auto h-3 p-0.5 bg-gray-300 rounded-full overflow-hidden mb-4">
-        <div
-          className="h-full bg-red-400 transition-all rounded-md"
-          style={{ width: `${progress}%` }}
-        ></div>
+      <div className="flex flex-row justify-between">
+        <div className="w-full md:w-1/2 my-auto mx-auto h-3 p-0.5 bg-gray-300 rounded-full overflow-hidden mb-4">
+          <div
+            className="h-full bg-red-400 transition-all rounded-md"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+        {/* {currentQuestionIndex === totalQuestions - 1 && ( */}
+        <button
+          onClick={onTimeUp}
+          className={`${
+            currentQuestionIndex === totalQuestions - 1
+              ? "bg-green-500 hover:bg-green-600"
+              : "bg-gray-400 cursor-not-allowed"
+          }  px-6 py-2 rounded-md shadow-md transition-all text-white font-semibold`}
+        >
+          Submit
+        </button>
+        {/* )} */}
       </div>
 
       {/* Content Container */}
@@ -94,12 +108,16 @@ const DesktopLayout = ({
                   <button
                     key={index}
                     onClick={() => {
-                      setQuizState((prev) => ({
-                        ...prev,
-                        currentQuestionIndex: index,
-                        selectedOption: null,
-                        isAnswerLocked: false,
-                      }));
+                      // Jump to the selected question
+                      setQuizState((prev) => {
+                        const previousAnswer = prev.userAnswers[index];
+                        return {
+                          ...prev,
+                          currentQuestionIndex: index,
+                          selectedOption: previousAnswer || null,
+                          isAnswerLocked: !!previousAnswer,
+                        };
+                      });
                     }}
                     className={`w-8 h-8 rounded-md ${buttonColor} transition-all hover:opacity-80 font-semibold`}
                   >
@@ -126,8 +144,8 @@ const DesktopLayout = ({
           {question && (
             <>
               {/* Question Text */}
-              <div className="shadow-md p-4 bg-red-100 rounded-md mb-4 h-auto md:h-full">
-                <h3 className="text-lg md:text-2xl text-center font-semibold mb-2">
+              <div className="shadow-md flex items-center justify-center p-4 bg-red-100 rounded-md mb-4 h-auto md:h-full">
+                <h3 className="text-lg md:text-2xl text-center font-semibold">
                   {question.questionText}
                 </h3>
                 {question.image && (
@@ -143,11 +161,19 @@ const DesktopLayout = ({
               <div className="mt-auto">
                 <div className="flex items-center justify-between mb-4">
                   {" "}
-                  {/* Added mb-4 for spacing */}
                   <p className="text-lg text-white font-light ml-4 text-center md:text-left">
                     Choose the Correct Option
                   </p>
                   <div className="flex font-semibold text-black/70 justify-end gap-4">
+                    {userAnswers[currentQuestionIndex] && (
+                      <button
+                        onClick={onResetSelection}
+                        className="bg-red-300 px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
+                      >
+                        <FontAwesomeIcon icon={faUndo} className="mr-2" />
+                        Reset
+                      </button>
+                    )}
                     <button
                       onClick={onPreviousQuestion}
                       disabled={currentQuestionIndex === 0}
@@ -170,15 +196,6 @@ const DesktopLayout = ({
                     >
                       &gt;
                     </button>
-                    {userAnswers[currentQuestionIndex] && (
-                      <button
-                        onClick={onResetSelection}
-                        className="bg-red-300 px-4 py-2 my-auto rounded-md shadow-md transition-all hover:bg-red-400 mr-4"
-                      >
-                        <FontAwesomeIcon icon={faUndo} className="mr-2" />
-                        Reset
-                      </button>
-                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-4 mx-auto max-w-[90%] md:max-w-[90%]">
@@ -188,12 +205,12 @@ const DesktopLayout = ({
                       disabled={isAnswerLocked && selectedOption !== option}
                       className={`py-3 px-20 md:py-4 rounded-md shadow-md flex flex-row items-center justify-between text-base md:text-lg font-semibold transition-all ${
                         selectedOption === option
-                          ? "bg-red-200 text-black ring-2 ring-red-500" // Highlight selected/locked
+                          ? "bg-red-200 text-black ring-2 ring-red-500"
                           : "bg-[rgb(244,230,230)]"
                       } ${
                         isAnswerLocked && selectedOption !== option
                           ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-red-100" // Add hover effect only if not locked
+                          : "hover:bg-red-100"
                       }`}
                       onClick={() => setSelectedOption(option)}
                     >
@@ -214,7 +231,6 @@ const DesktopLayout = ({
 };
 
 const MobLayout = ({
-  progress,
   question,
   selectedOption,
   setSelectedOption,
@@ -222,7 +238,6 @@ const MobLayout = ({
   onResetSelection,
   onTimeUp,
   countdown,
-  score,
   currentQuestionIndex,
   onNextQuestion,
   onPreviousQuestion,
@@ -235,33 +250,7 @@ const MobLayout = ({
           <h3 className="text-lg font-semibold">
             Question : {currentQuestionIndex + 1}
           </h3>
-          <div className="flex gap-2">
-            <button
-              onClick={onPreviousQuestion}
-              disabled={currentQuestionIndex === 0}
-              className={`px-3 py-1 rounded-md text-sm ${
-                currentQuestionIndex === 0
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-red-400 hover:bg-red-500"
-              } transition-all`}
-            >
-              &lt;
-            </button>
-            <button
-              onClick={onNextQuestion}
-              disabled={currentQuestionIndex === totalQuestions - 1}
-              className={`px-3 py-1 rounded-md text-sm ${
-                currentQuestionIndex === totalQuestions - 1
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-red-400 hover:bg-red-500"
-              } transition-all`}
-            >
-              &gt;
-            </button>
-          </div>
-        </div>
-        <div className="flex justify-between items-center">
-          <span>Score: {score}</span>
+          {/* <span>Score: {score}</span> */}
           <span>
             Time: {Math.floor(countdown / 60)}:
             {(countdown % 60).toString().padStart(2, "0")}
@@ -299,14 +288,53 @@ const MobLayout = ({
         </div>
       </div>
 
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+        {currentQuestionIndex === totalQuestions - 1 && (
+          <button
+            onClick={onTimeUp}
+            className={`${
+              currentQuestionIndex === totalQuestions - 1
+                ? "bg-mag hover:bg-red-600"
+                : "bg-gray-400 cursor-not-allowed"
+            } px-6 py-2 rounded-xl shadow-md transition-all text-white font-semibold`}
+          >
+            Submit
+          </button>
+        )}
+      </div>
+      <div className="flex items-center w-full my-3 pr-4 justify-end">
+        <div className="flex gap-2">
+          <button
+            onClick={onPreviousQuestion}
+            disabled={currentQuestionIndex === 0}
+            className={`px-3 py-2 rounded-md text-sm ${
+              currentQuestionIndex === 0
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-red-400 hover:bg-mag"
+            } transition-all`}
+          >
+            &lt;
+          </button>
+          <button
+            onClick={onNextQuestion}
+            disabled={currentQuestionIndex === totalQuestions - 1}
+            className={`px-3 py-2 rounded-md text-sm ${
+              currentQuestionIndex === totalQuestions - 1
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-red-400 hover:bg-mag"
+            } transition-all`}
+          >
+            &gt;
+          </button>
+        </div>
+      </div>
+
       {/* Options Section: Displays answer choices and a timer progress bar */}
-      <div className="bg-white py-6 px-6 rounded-t-[50px] shadow-md">
+      <div className="bg-white py-6 px-6 pb-16 rounded-t-[50px] shadow-md">
         <div className="flex justify-between items-center mb-8">
           <p className="text-xl font-poppins font-bold text-gray-800">
             Select the Correct Option
           </p>
-          {/* Reset Button - Show only when an option is selected and locked */}
-          {/* {selectedOption && isAnswerLocked && ( */}
           <button
             onClick={onResetSelection} // Use the passed handler
             className="px-3 py-1.5 bg-red-50 text-black/70 rounded-full transition-all hover:bg-red-100"
@@ -352,16 +380,6 @@ const MobLayout = ({
               )}
             </button>
           ))}
-        </div>
-
-        {/* Timer progress bar (turns red in last 5 seconds) */}
-        <div className="w-full h-2.5 mt-8 mb-4 bg-transparent border-2 border-black rounded-full overflow-hidden">
-          <div
-            className={`h-full transition-all ease ${
-              countdown <= 5 ? "bg-red-500" : "bg-green-400"
-            }`}
-            style={{ width: `${(countdown / 30) * 100}%` }}
-          ></div>
         </div>
       </div>
     </div>
@@ -433,17 +451,6 @@ const QuizPage = () => {
     }));
   }, [currentQuiz, quizState.currentQuestionIndex]);
 
-  // Update the question navigation to restore previous answers
-  const handleQuestionNavigation = (index) => {
-    const previousAnswer = quizState.userAnswers[index];
-    setQuizState((prev) => ({
-      ...prev,
-      currentQuestionIndex: index,
-      selectedOption: previousAnswer || null,
-      isAnswerLocked: !!previousAnswer,
-    }));
-  };
-
   // Update handleNextQuestion and handlePreviousQuestion
   const handleNextQuestion = () => {
     if (quizState.currentQuestionIndex < currentQuiz.questions.length - 1) {
@@ -508,72 +515,89 @@ const QuizPage = () => {
   const handleTimeUp = () => {
     if (!currentQuiz?.questions) return;
 
-    if (!quizState.selectedOption) {
+    // If there's a current answer that hasn't been processed
+    if (quizState.selectedOption && !quizState.isAnswerLocked) {
+      const isCorrect = quizState.selectedOption === quizState.question?.correctAnswer;
+      // Only calculate time bonus for the last question
+      const timeBonus = (isCorrect && quizState.currentQuestionIndex === currentQuiz.questions.length - 1) 
+        ? Math.floor(quizState.countdown / 2) 
+        : 0;
+      const pointsEarned = isCorrect ? 100 + timeBonus : 0;
+
       setStats((prev) => ({
         ...prev,
-        timeSpent: [...prev.timeSpent, 30],
+        actualScore: prev.actualScore + pointsEarned,
+        timeBonusTotal: prev.timeBonusTotal + timeBonus,
+        correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
+        timeSpent: [...prev.timeSpent, 30 - quizState.countdown],
+        answers: [
+          ...prev.answers,
+          {
+            quesKey: quizState.currentQuestionIndex,
+            selectedAnswer: quizState.selectedOption,
+            correctAnswer: quizState.question?.correctAnswer,
+            isCorrect,
+            timeLeft: quizState.countdown,
+            questionScore: pointsEarned,
+            timeBonus,
+            streak: quizState.streak,
+          },
+        ],
       }));
     }
 
-    if (quizState.currentQuestionIndex < currentQuiz.questions.length - 1) {
-      const nextIndex = quizState.currentQuestionIndex + 1;
-      setTimeout(() => {
-        setQuizState((prev) => ({
-          ...prev,
-          currentQuestionIndex: nextIndex,
-          selectedOption: null,
-          isAnswerLocked: false,
-          countdown: 30,
-        }));
-      }, 1000);
-    } else {
-      // Calculate final stats including the last question
-      const lastAnswer = stats.answers[stats.answers.length - 1];
-      const totalQuestions = currentQuiz.questions.length;
+    // Calculate final stats
+    const totalQuestions = currentQuiz.questions.length;
+    const finalStats = {
+      totalScore: stats.actualScore,
+      timeBonus: stats.timeBonusTotal,
+      correctAnswers: stats.correctCount,
+      totalQuestions,
+      accuracy: Math.round((stats.correctCount / totalQuestions) * 100),
+      averageTime: Math.round(
+        stats.timeSpent.reduce((total, time) => total + time, 0) / totalQuestions
+      ),
+    };
 
-      // setGlobalStreak((prev) => {
-      //   const newStreak = lastAnswer?.isCorrect? prev + 1 : 0;
-      //   return newStreak;
-      // });
-      setResults({
-        showResults: true,
-        quizStats: {
-          totalScore: stats.actualScore + (lastAnswer?.questionScore || 0),
-          timeBonus: stats.timeBonusTotal + (lastAnswer?.timeBonus || 0),
-          correctAnswers: stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0),
-          totalQuestions,
-          accuracy: Math.round(
-            ((stats.correctCount + (lastAnswer?.isCorrect ? 1 : 0)) /
-              totalQuestions) *
-              100
-          ),
-          averageTime: Math.round(
-            stats.timeSpent.reduce((total, time) => total + time, 0) /
-              totalQuestions
-          ),
-        },
-      });
-    }
+    // Store results in session storage
+    const sessionData = {
+      code: siteData?.code,
+      stats: finalStats,
+      globals: globalStreak,
+    };
+    sessionStorage.setItem("isPlayed", JSON.stringify(sessionData));
+
+    // Show results
+    setResults({
+      showResults: true,
+      quizStats: finalStats,
+      globals: globalStreak,
+    });
   };
 
   const handleOptionSelect = (option) => {
     if (quizState.isAnswerLocked) return;
 
     const isCorrect = option === quizState.question?.correctAnswer;
-    const timeBonus = isCorrect ? Math.floor(quizState.countdown / 2) : 0;
+    // Only calculate time bonus for the last question
+    const timeBonus = (isCorrect && quizState.currentQuestionIndex === currentQuiz.questions.length - 1) 
+      ? Math.floor(quizState.countdown / 4) 
+      : 0;
     const pointsEarned = isCorrect ? 100 + timeBonus : 0;
-    const newStreak = isCorrect ? quizState.streak + 1 : 0;
+    
+    // Calculate new streak
+    const newStreak = isCorrect ? (quizState.streak + 1) : 0;
 
-    // Store the selected option in userAnswers
     setQuizState((prev) => ({
       ...prev,
       selectedOption: option,
       isAnswerLocked: true,
-      answeredQuestions: [...prev.answeredQuestions, quizState.currentQuestionIndex],
+      answeredQuestions: [...prev.answeredQuestions, prev.currentQuestionIndex],
       userAnswers: {
         ...prev.userAnswers,
-        [quizState.currentQuestionIndex]: option, // Store just the selected option
+        [prev.currentQuestionIndex]: option,
       },
+      streak: newStreak, // Update streak immediately in quiz state
     }));
 
     // Update statistics
@@ -598,17 +622,17 @@ const QuizPage = () => {
       ],
     }));
 
-    setGlobalStreak({
-      score: stats.actualScore,
+    // Update global streak
+    setGlobalStreak((prev) => ({
+      score: prev.score + pointsEarned,
       streak: newStreak,
-    });
+    }));
 
-    // Delay display score and streak update
+    // Delay display score update
     setTimeout(() => {
       setQuizState((prev) => ({
         ...prev,
         displayScore: prev.displayScore + pointsEarned,
-        streak: newStreak,
       }));
     }, quizState.countdown * 1000);
   };
@@ -626,8 +650,9 @@ const QuizPage = () => {
         ),
         userAnswers: {
           ...prev.userAnswers,
-          [prev.currentQuestionIndex]: null, // Clear the answer for this question
+          [prev.currentQuestionIndex]: null,
         },
+        streak: currentAnswer.isCorrect ? Math.max(0, prev.streak - 1) : prev.streak, // Adjust streak when resetting
       }));
 
       // Update stats
@@ -644,9 +669,8 @@ const QuizPage = () => {
 
       // Update global streak
       setGlobalStreak((prev) => ({
-        ...prev,
         score: prev.score - currentAnswer.questionScore,
-        streak: prev.streak - (currentAnswer.isCorrect ? 1 : 0),
+        streak: currentAnswer.isCorrect ? Math.max(0, prev.streak - 1) : prev.streak,
       }));
     }
   };
