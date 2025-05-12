@@ -7,12 +7,14 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
   const siteData = localStorage.getItem("siteData");
   const weUser = siteData ? JSON.parse(siteData) : {};
   const uid = weUser.uid;
-  const code = weUser.code; // quizId
-  const invoked = useRef(false); // flag for useEffect
+  const code = weUser.code;
+  const invoked = useRef(false);
   // Add state for leaderboard
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
   const [leaderboardError, setLeaderboardError] = useState(null);
+
+  const api = import.meta.env.VITE_API_URL;
 
   // Save quiz data to session storage
   useEffect(() => {
@@ -51,48 +53,35 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
 
     // console.log("Submitting user stats with streak:", userStatData);
 
-    const saveAPI = "https://ccc-quiz.onrender.com/player/SavePlayer";
-    const leaderboardAPI = `https://ccc-quiz.onrender.com/player/leaderboard/${code}`;
+    const saveAPI = `${api}/player/SavePlayer`;
+    const leaderboardAPI = `${api}/player/leaderboard/${code}`;
 
     setLoadingLeaderboard(true); // Start loading before fetch
     setLeaderboardError(null); // Reset error
     try {
       try {
-        // console.log("Sending stats to:", saveAPI);
         const saveResponse = await axios.post(saveAPI, userStatData);
-        // console.log("Stats saved successfully:", saveResponse.data);
-      } catch (saveError) {
-        // console.error("Error saving stats:", saveError);
-        // Log and continue to fetch leaderboard
-      }
+      } catch (saveError) {}
 
       // Fetch leaderboard data
-      // console.log("Fetching leaderboard from:", leaderboardAPI);
       const leaderboardResponse = await axios.get(leaderboardAPI);
-      // console.log("Leaderboard data received:", leaderboardResponse.data);
 
       // Ensure data is an array and sort by score descending
       const data = Array.isArray(leaderboardResponse.data)
         ? leaderboardResponse.data
         : [];
-      // Sort here to ensure consistent order
       const sortedData = data.sort((a, b) => (b.score || 0) - (a.score || 0));
       setLeaderboardData(sortedData);
     } catch (error) {
-      // console.error("Error during leaderboard fetch:", error);
       if (error.response) {
-        // console.error("Error data:", error.response.data);
-        // console.error("Error status:", error.response.status);
         setLeaderboardError(
           `Failed to load leaderboard: Server responded with status ${error.response.status}`
         );
       } else if (error.request) {
-        // console.error("Error request:", error.request);
         setLeaderboardError(
           "Failed to load leaderboard: No response from server."
         );
       } else {
-        // console.error("Error message:", error.message);s
         setLeaderboardError(`Failed to load leaderboard: ${error.message}`);
       }
     } finally {
@@ -198,7 +187,7 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
   const fetchLeaderboard = useCallback(async () => {
     setLoadingLeaderboard(true);
     setLeaderboardError(null);
-    const leaderboardAPI = `https://ccc-quiz.onrender.com/player/leaderboard/${code}`;
+    const leaderboardAPI = `${api}/player/leaderboard/${code}`;
     try {
       const leaderboardResponse = await axios.get(leaderboardAPI);
       const data = Array.isArray(leaderboardResponse.data)

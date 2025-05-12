@@ -36,6 +36,8 @@ const AdminLogin = () => {
   const [captcha, setCaptcha] = useState(false);
   const [captchaToken, setCaptchaToken] = useState(null);
 
+  const api = import.meta.env.VITE_API_URL;
+
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAdminContext();
@@ -66,13 +68,12 @@ const AdminLogin = () => {
       return;
     }
 
-    // const response = await axios
     const adminData = {
       email: email,
       password: password,
     };
 
-    const loginAPI = "https://mediconnect-pn3n.onrender.com/user/login";
+    const loginAPI = `${api}/user/login`;
 
     try {
       setLoginLoader(true);
@@ -84,20 +85,6 @@ const AdminLogin = () => {
       }
       setMessageType("success");
       setMessage("Login successful!");
-
-      // if (email === "admin@ccc.akgec.live" && password === "password") {
-      //   await login(email);
-      //   setMessageType("success");
-      //   setMessage("Login successful!");
-
-      //   // Add a small delay to show success message
-      //   setTimeout(() => {
-      //     navigate(from, { replace: true });
-      //   }, 1000);
-      // } else {
-      //   setMessageType("error");
-      //   setMessage("Invalid credentials");
-      // }
     } catch (err) {
       setMessageType("error");
       setMessageType("error");

@@ -5,7 +5,6 @@ import CountdownTimer from "../assets/CountdownTimer";
 import { useMediaQuery } from "react-responsive";
 import { Lock, Expand, X } from "lucide-react";
 import Spinner from "../assets/Spinner";
-import axios from "axios";
 import { useQuiz } from "../Context/QuizContext";
 import { useAuth } from "../Security/AuthContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

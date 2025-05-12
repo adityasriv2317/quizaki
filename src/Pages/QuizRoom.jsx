@@ -16,11 +16,13 @@ const QuizRoom = () => {
   const roomCode = siteData.code;
   const { tokens } = useAuth();
 
+  const api = import.meta.env.VITE_API_URL;
+
   async function getQuizData(roomCode) {
     try {
       // console.log(tokens.accessToken);
       const response = await axios.get(
-        "https://ccc-quiz.onrender.com/admin/fetchQuiz?email=saurabhsri.mau@gmail.com"
+        `${api}/admin/fetchQuiz?email=saurabhsri.mau@gmail.com`
       );
       // find the quiz with the given room code
       const quiz = response.data.find((q) => q.quizId === roomCode);

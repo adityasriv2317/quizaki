@@ -18,7 +18,9 @@ import {
 import mesh from "/graphics/mesh.svg";
 import axios from "axios";
 
-const createAPI = "https://ccc-quiz.onrender.com/admin/CreateQuiz";
+const api = import.meta.env.VITE_API_URL;
+
+const createAPI = `${api}/admin/CreateQuiz`;
 
 const CreateQuiz = () => {
   // Add new state for toggle

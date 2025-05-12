@@ -7,15 +7,16 @@ const DBTable = ({ onQuizSelect }) => {  // Add this prop
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
-  // Change rowsPerPage to 5
   const rowsPerPage = 5;
+
+  const api = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
         const response = await axios.get(
-          "https://ccc-quiz.onrender.com/admin/fetchQuiz",
+          `${api}/admin/fetchQuiz`,
           { params: { email: "saurabhsri.mau@gmail.com" } }
         );
         // Updated sorting logic
