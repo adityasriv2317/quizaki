@@ -80,7 +80,7 @@ const AdminLogin = () => {
 
       const response = await axios.post(loginAPI, adminData);
       if (response.status === 200) {
-        sessionStorage.setItem("adminData", JSON.stringify(response.data));
+        login(email);
         navigate(from, { replace: true });
       }
       setMessageType("success");
@@ -95,7 +95,7 @@ const AdminLogin = () => {
   };
 
   useEffect(() => {
-    const adminData = sessionStorage.getItem("adminData");
+    const adminData = localStorage.getItem("adminData");
     if (adminData) {
       navigate("/admin/dashboard", { replace: true });
     }
