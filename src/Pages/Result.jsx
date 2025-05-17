@@ -41,7 +41,7 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
 
     const sessionData = sessionStorage.getItem("isPlayed");
     const ssData = sessionData ? JSON.parse(sessionData) : {};
-    const hasPlayed = ssData && ssData.code === code;
+    const hasPlayed = sessionData ? true : false;
 
     const userStatData = {
       uid: uid,
@@ -59,12 +59,16 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
     setLoadingLeaderboard(true);
     setLeaderboardError(null);
     try {
-      // Only save if the user hasn't played this quiz before
-      if (!hasPlayed) {
+      const isSaved = sessionStorage.getItem("isSaved");
+      // Only save if the user hasn't played this 
+      // quiz before
+      if (!isSaved && code === ssData.code) {
         try {
           const saveResponse = await axios.post(saveAPI, userStatData);
+          sessionStorage.setItem("isSaved", true);
+          // console.log(saveResponse);
         } catch (saveError) {
-          console.error("Error saving stats:", saveError);
+          // console.error("Error saving stats:", saveError);
         }
       }
 
@@ -97,6 +101,29 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
       setLoadingLeaderboard(false);
     }
   }, [quizStats, code, uid, globals.streak]);
+
+  const savePlayer = async () => {
+    const saveAPI = `${api}/player/SavePlayer`;
+    const sessionData = sessionStorage.getItem("isPlayed");
+    const ssData = sessionData ? JSON.parse(sessionData) : {};
+    const hasPlayed = sessionData ? true : false;
+    const isSaved = sessionStorage.getItem("isSaved");
+    if (!isSaved && code === ssData.code) {
+      try {
+        const saveResponse = await axios.post(saveAPI, userStatData);
+        sessionStorage.setItem("isSaved", true);
+        // console.log(saveResponse);
+      } catch (saveError) {
+        // console.error("Error saving stats:", saveError);
+      }
+    } else {
+      console.log("Player already played");
+    }
+  };
+
+  // useEffect(() => {
+  //   savePlayer();
+  // }, []);
 
   useEffect(() => {
     const siteData = localStorage.getItem("siteData");
@@ -203,7 +230,7 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
     const leaderboardAPI = `${api}/player/leaderboard/${code}`;
     setLoadingLeaderboard(true);
     setLeaderboardError(null);
-    
+
     try {
       const leaderboardResponse = await axios.get(leaderboardAPI);
       const data = Array.isArray(leaderboardResponse.data)
