@@ -180,9 +180,9 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
               Score
             </span>
             {/* Center Streak header only if expanded */}
-            <span className={isExpandedView ? "text-center" : "text-right"}>
+{/*             <span className={isExpandedView ? "text-center" : "text-right"}>
               Streak
-            </span>
+            </span> */}
           </div>
           {/* Rows - Apply text-center conditionally for expanded view */}
           {dataToShow.map((entry, index) => (
@@ -206,13 +206,13 @@ const ResultLayout = ({ quizStats, onHomeClick, globals }) => {
                 {entry.score}
               </span>
               {/* Center Streak only if expanded */}
-              <span
+{/*               <span
                 className={`font-semibold ${
                   isExpandedView ? "text-center" : "text-right"
                 }`}
               >
                 {entry.streak || 0}
-              </span>
+              </span> */}
             </div>
           ))}
         </div>
