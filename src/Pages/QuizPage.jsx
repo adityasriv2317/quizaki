@@ -288,7 +288,7 @@ const MobLayout = ({
         </div>
       </div>
 
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+      <div className="absolute bottom-1 z-[1000] left-1/2 -translate-x-1/2">
         {currentQuestionIndex === totalQuestions - 1 && (
           <button
             onClick={onTimeUp}
@@ -296,7 +296,7 @@ const MobLayout = ({
               currentQuestionIndex === totalQuestions - 1
                 ? "bg-mag hover:bg-red-600"
                 : "bg-gray-400 cursor-not-allowed"
-            } px-6 py-2 rounded-xl shadow-md z-[1000] transition-all text-white font-semibold`}
+            } px-6 py-2 rounded-xl shadow-md transition-all text-white font-semibold`}
           >
             Submit
           </button>
